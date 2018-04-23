@@ -29,10 +29,11 @@ class Drone(CommandObserver, RingObserver):
         pass
 
     def receive_command(self, command, priority):
+        # TODO: Command is received from analyzer of pathfinder, determine how to react based on priority
         pass
 
     def add_ring(self, ring):
-        # TODO: Ring is found, add it to the list of rings
+        # TODO: Ring is found by analyzer (probably while exploring), add it to the list of rings
         """
         PSEUDO CODE:
 

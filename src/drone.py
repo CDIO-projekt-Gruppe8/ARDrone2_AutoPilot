@@ -1,7 +1,7 @@
 from src.interfaces import CommandObserver, RingObserver
-from modules.analyzer import Analyzer
-from modules.pathfinder import Pathfinder
-from modules.communication import Communication
+from src.modules.analyzer import Analyzer
+from src.modules.pathfinder import Pathfinder
+from src.modules.communication import Communication
 # TODO: Implement run(), initiate_drone_configuration(), receive_command(), add_ring()
 
 

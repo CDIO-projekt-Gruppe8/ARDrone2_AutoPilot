@@ -2,6 +2,10 @@
 
 
 class Communication(object):
+    def test(self):
+        # TODO: Test communication with drone
+        pass
+
     def lift(self):
         # TODO: Tell the drone to lift and hover
         pass

@@ -17,7 +17,7 @@ class Pathfinder(Commander):
             self.send_command(command, priority)
         pass
 
-    def penetrate_ring(self, ring):
+    def penetrate_ring(self, ring, callback):  # Callback must take 1 parameter (bool, indicating if penetrated)
         priority = Priority.Penetrating
         self.approach_ring(ring)
         passed = False
@@ -25,6 +25,9 @@ class Pathfinder(Commander):
             # TODO: Implement logic to enter the ring and determine when the ring is passed
             command = None  # TODO
             self.send_command(command, priority)
+        # Ring is now passed or loop escaped for some reason
+        if callback is not None:
+            callback(passed)
         pass
 
     def approach_ring(self, ring):

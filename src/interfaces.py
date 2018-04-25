@@ -1,8 +1,6 @@
 class Commander(object):
-    def __init__(self, obs, priority):
+    def __init__(self):
         self._command_observers = set()
-        self._command_observers.add(obs)
-        self._priority = priority
 
     def send_command(self, command, priority):
         # priority should be a Priority object

@@ -3,31 +3,31 @@
 
 
 class Ring(object):
-    position = [0, 0, 0]
-    radius = 0
-    qr_number = -1
-    passed = False
+    _position = [0, 0, 0]
+    _radius = 0
+    _qr_number = -1
+    _passed = False
 
     def get_position(self):
-        return self.position
+        return self._position
 
     def set_position(self, position):
-        self.position = position
+        self._position = position
 
     def get_radius(self):
-        return self.radius
+        return self._radius
 
     def set_radius(self, radius):
-        self.radius = radius
+        self._radius = radius
 
     def get_qr_number(self):
-        return self.qr_number
+        return self._qr_number
 
     def set_qr_number(self, qr_number):
-        self.qr_number = qr_number
+        self._qr_number = qr_number
 
     def get_passed(self):
-        return self.passed
+        return self._passed
 
     def set_passed(self, passed):
-        self.passed = passed
+        self._passed = passed

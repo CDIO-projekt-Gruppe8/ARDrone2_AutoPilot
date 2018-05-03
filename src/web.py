@@ -1,4 +1,4 @@
-from src.interfaces import AnalyzedCamObserver
+from interfaces import AnalyzedCamObserver
 # TODO: Implement start(), stop(), receive_analyzed_video()
 
 

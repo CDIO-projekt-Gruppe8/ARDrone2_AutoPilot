@@ -1,5 +1,5 @@
-from src.drone import Drone
-from src.web import WebInterface
+from drone import Drone
+from web import WebInterface
 # TODO: Implement main() as a CLI which could call drone.run()
 
 

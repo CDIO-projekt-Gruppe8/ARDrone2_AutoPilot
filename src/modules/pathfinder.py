@@ -1,4 +1,4 @@
-from src.interfaces import Commander, Priority
+from interfaces import Commander, Priority
 # TODO: Sanity check on rings
 # TODO: Implement explore(), penetrate_ring(), approach_ring()
 # TODO: (while loops of) explore(), penetrate_ring(), approach_ring() should all run in a separate thread

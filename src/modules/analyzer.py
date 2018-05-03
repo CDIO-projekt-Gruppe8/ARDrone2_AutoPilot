@@ -1,4 +1,4 @@
-from src.interfaces import Commander, Priority
+from interfaces import Commander, Priority
 # TODO: Sanity and type check on all add/delete methods
 # TODO: Implement analyze_video()
 # TODO: analyze_video() should run in a separate thread [this also affects start() and stop()]

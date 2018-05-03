@@ -7,7 +7,9 @@ def main():
     drone = Drone()
     web = WebInterface()
     drone.run()
+    drone.add_analyzed_video_observer(web)
     pass
+
 
 if __name__ == "__main__":
     # Being executed as a standalone project

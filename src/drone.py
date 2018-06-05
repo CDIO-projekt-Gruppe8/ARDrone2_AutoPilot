@@ -1,4 +1,5 @@
 import time
+import collections
 from interfaces import CommandObserver, RingObserver, Priority
 from modules.analyzer import Analyzer
 from modules.pathfinder import Pathfinder
@@ -11,27 +12,32 @@ class Drone(CommandObserver, RingObserver):
     _penetrating = False
 
     def __init__(self):
+        print("Drone initiating")
         self._analyzer = Analyzer()
         self._communication = Communication()
         self._pathfinder = Pathfinder()
 
-        self._video_URL = "tcp://localhost:5555"
+        self._video_url = "tcp://localhost:5555"  # TODO: Insert correct URL
         self._number_of_rings = 10  # TODO: Real number? Determine dynamically? How long should it search?
         self._current_ring = 0
         self._rings = [None] * self._number_of_rings
-        self._commands = {Priority.Exploring: None, Priority.Approaching: None, Priority.Analyzing: None,
-                          Priority.Penetrating: None}
+        self._commands = collections.OrderedDict([
+            (Priority.Exploring, None),
+            (Priority.Approaching, None),
+            (Priority.Analyzing, None),
+            (Priority.Penetrating, None)])
 
     def run(self):
         ready, msg = self._communication.test()
         if ready:
+            print("Take off with msg: " + msg)
+            # Listen for events
+            self.add_command_observer(self)
+            self.add_ring_observer(self)
             # Initiate analyzer
-            self._analyzer.add_command_observer(self)
-            self._analyzer.add_command_observer(self)
-            self._analyzer.analyze_video(self._video_URL, self._rings)
             self._analyzer.start()
+            self._analyzer.analyze_video(self._video_url, self._rings)
             # Initiate pathfinder
-            self._pathfinder.add_command_observer(self)
             self._pathfinder.explore()
             self._pathfinder.start()
         else:
@@ -47,8 +53,10 @@ class Drone(CommandObserver, RingObserver):
     def _send_command(self):
         while True:
             time.sleep(0.03)
-            if self._penetrating and self._commands[Priority.Penetrating] is None:
-                continue
+            if self._penetrating:
+                command = self._commands[Priority.Penetrating]
+                if command is None:
+                    continue
             else:
                 command = next((el for el in self._commands if el is not None), None)
             if command is not None:
@@ -59,9 +67,9 @@ class Drone(CommandObserver, RingObserver):
         self._rings[ring.get_qr_number()] = ring
         if ring.get_qr_number() is self._current_ring:
             self._pathfinder.pause()
-            self._pathfinder.penetrate_ring(ring, self.update_state())
+            self._pathfinder.penetrate_ring(ring, self._update_state())
 
-    def update_state(self):
+    def _update_state(self):
         if self._current_ring == self._number_of_rings:
             # Final ring penetrated - exit the game
             self._pathfinder.stop()

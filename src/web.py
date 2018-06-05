@@ -1,8 +1,8 @@
-from interfaces import AnalyzedCamObserver
+from interfaces import AnalyzedVideoObserver
 # TODO: Implement start(), stop(), receive_analyzed_video()
 
 
-class WebInterface(AnalyzedCamObserver):
+class WebInterface(AnalyzedVideoObserver):
     def start(self):
         # Initiates the drone and starts the video display
         pass

@@ -24,8 +24,8 @@ class RingObserver(object):
         pass
 
 
-class AnalyzedCamObserver(object):
-    def receive_analyzed_video(self, stream):
+class AnalyzedVideoObserver(object):
+    def receive_analyzed_video(self, analyzed_frame, original_frame):
         pass
 
 

@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 # Inspired by https://www.pyimagesearch.com/2014/07/21/detecting-circles-images-using-opencv-hough-circles/
 
-cap = cv2.VideoCapture("nemt.avi")
+cap = cv2.VideoCapture(0)
 
 while True:
     # Capture frame-by-frame

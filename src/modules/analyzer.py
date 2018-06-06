@@ -1,16 +1,16 @@
-from interfaces import Commander, Priority
 # TODO: Sanity and type check on all add/delete methods
 # TODO: Implement analyze_video()
 # TODO: analyze_video() should run in a separate thread [this also affects start() and stop()]
 
 
-class Analyzer(Commander):
+class Analyzer(object):
     _ring_observers = set()
     _analyzed_video_observers = set()
     _analyzing = False
 
-    def analyze_video(self, video_URL, rings):
-        priority = Priority.Analyzing
+    def analyze_video(self, video_url, rings):
+        if video_url is None:
+            return
         video = None  # TODO: cv2.VideoCapture(video_URL)
         # Analyzes the video and searches for rings
         # video is the resulting object of cv2.VideoCapture(video_URL)
@@ -19,11 +19,6 @@ class Analyzer(Commander):
         # Always call _analyzed_video_observer_callback()
         ret, frame = video.read()
         while self._analyzing and ret:
-            # TODO: Analyze the video
-            if False:
-                # If specific drone movement is needed for analysis, call send_command()
-                command = None  # TODO
-                self.send_command(command, priority)
             ring = None  # TODO: Any ring found in the analysis - loop if multiple
             if not rings.contains(ring):
                 self._ring_observer_callback(ring)

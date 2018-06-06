@@ -1,6 +1,5 @@
 import time
-import collections
-from interfaces import CommandObserver, RingObserver, Priority
+from interfaces import CommandObserver, RingObserver
 from modules.analyzer import Analyzer
 from modules.pathfinder import Pathfinder
 from modules.communication import Communication
@@ -21,11 +20,7 @@ class Drone(CommandObserver, RingObserver):
         self._number_of_rings = 10  # TODO: Real number? Determine dynamically? How long should it search?
         self._current_ring = 0
         self._rings = [None] * self._number_of_rings
-        self._commands = collections.OrderedDict([
-            (Priority.Exploring, None),
-            (Priority.Approaching, None),
-            (Priority.Analyzing, None),
-            (Priority.Penetrating, None)])
+        self._command = None
 
     def run(self):
         ready, msg = self._communication.test()
@@ -47,20 +42,15 @@ class Drone(CommandObserver, RingObserver):
         # TODO: Implement
         pass
 
-    def receive_command(self, command, priority):
-        self._commands[priority] = command
+    def receive_command(self, command):
+        self._command = command
 
     def _send_command(self):
         while True:
             time.sleep(0.03)
-            if self._penetrating:
-                command = self._commands[Priority.Penetrating]
-                if command is None:
-                    continue
-            else:
-                command = next((el for el in self._commands if el is not None), None)
-            if command is not None:
-                self._communication.move(command)
+            if self._command is not None:
+                self._communication.move(self._command)
+                self._command = None  # TODO: Variable should be locked
         pass
 
     def add_ring(self, ring):

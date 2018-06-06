@@ -71,7 +71,6 @@ class Drone(CommandObserver, RingObserver):
 
     def add_command_observer(self, observer):
         self._pathfinder.add_command_observer(observer)
-        self._analyzer.add_command_observer(observer)
 
     def add_ring_observer(self, observer):
         self._analyzer.add_ring_observer(observer)
@@ -81,7 +80,6 @@ class Drone(CommandObserver, RingObserver):
 
     def del_command_observer(self, observer):
         self._pathfinder.del_command_observer(observer)
-        self._analyzer.del_command_observer(observer)
 
     def del_ring_observer(self, observer):
         self._analyzer.del_ring_observer(observer)

@@ -59,6 +59,8 @@ class Drone(CommandObserver, RingObserver):
             self._pathfinder.pause()
             self._pathfinder.penetrate_ring(ring, self._update_state())
 
+    # Used as a callback function when calling pathfinder.penetrate_ring()
+    # Will be called once the ring has been passed
     def _update_state(self):
         if self._current_ring == self._number_of_rings:
             # Final ring penetrated - exit the game
@@ -66,8 +68,14 @@ class Drone(CommandObserver, RingObserver):
             self._analyzer.stop()
             self._communication.land()
         else:
-            # More rings to penetrate - continue exploring
-            self._pathfinder.start()
+            ring = self._rings[self._current_ring]
+            if ring is not None:
+                # Next ring to penetrate has been found already. Penetrate it
+                self._pathfinder.pause()
+                self._pathfinder.penetrate_ring(ring, self._update_state())
+            else:
+                # More rings to penetrate - continue exploring
+                self._pathfinder.start()
 
     def add_command_observer(self, observer):
         self._pathfinder.add_command_observer(observer)

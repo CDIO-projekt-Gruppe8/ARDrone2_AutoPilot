@@ -22,18 +22,22 @@ while True:
     ret, frame = cap.read()
 
     # Rin operations on the frame
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    gray = cv2.medianBlur(gray, 5)
+    #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    #gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    #gray = cv2.medianBlur(gray, 5)
 
     # Color operations on the frame
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    color1 = cv2.inRange(hsv, lowerBound1, upperBound2)
+    color1 = cv2.inRange(hsv, lowerBound1, upperBound1)
     color2 = cv2.inRange(hsv, lowerBound2, upperBound2)
     color = color1+color2
 
+    res = cv2.bitwise_and(frame, frame, mask=color)
+    res2 = cv2.bitwise_and(frame, frame, mask=color1)
+    res3 = cv2.bitwise_and(frame, frame, mask=color2)
+
     # Finds the cirles in the frames
-    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=100, minRadius=0, maxRadius=0)
+    circles = cv2.HoughCircles(color, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=100, minRadius=0, maxRadius=0)
 
     # If there are circles, draw then on the video feed
     if circles is not None:
@@ -52,7 +56,9 @@ while True:
 
     # Display the resulting frame
     cv2.imshow('Ring Detection',frame)
-    cv2.imshow('Color',color)
+    cv2.imshow('Color',res)
+    cv2.imshow('Color1', res2)
+    cv2.imshow('Color2', res3)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
             break

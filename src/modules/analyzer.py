@@ -8,8 +8,11 @@ import numpy as np
 # Inspired by https://www.pyimagesearch.com/2014/07/21/detecting-circles-images-using-opencv-hough-circles/
 
 # Color definition
-lowerBound=np.array([20, 70, 255])
-upperBound=np.array([20, 150, 255])
+lowerBound1=np.array([170,50,50])
+upperBound1=np.array([180,255,255])
+
+lowerBound2=np.array([0,50,50])
+upperBound2=np.array([10,255,255])
 
 # Initiate video capture
 cap = cv2.VideoCapture(0)
@@ -25,7 +28,9 @@ while True:
 
     # Color operations on the frame
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    color = cv2.inRange(hsv, lowerBound, upperBound)
+    color1 = cv2.inRange(hsv, lowerBound1, upperBound2)
+    color2 = cv2.inRange(hsv, lowerBound2, upperBound2)
+    color = color1+color2
 
     # Finds the cirles in the frames
     circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=100, minRadius=0, maxRadius=0)
@@ -34,7 +39,7 @@ while True:
     if circles is not None:
             # convert the (x, y) coordinates and radius of the circles to integers
 
-            print "Ring observed"
+            print("Ring observed")
 
             circles = np.round(circles[0, :]).astype("int")
 

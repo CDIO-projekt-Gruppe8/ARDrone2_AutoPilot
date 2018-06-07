@@ -94,7 +94,7 @@ class Drone(CommandObserver, RingObserver):
     def _penetrate(self, ring):
         self._penetrating = True
         self._pathfinder.pause()
-        self._pathfinder.penetrate_ring(ring, self._ring_passed())
+        self._pathfinder.penetrate_ring(ring, self._ring_passed)
 
     def _explore(self):
         self._pathfinder.start()

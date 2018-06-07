@@ -25,10 +25,5 @@ class RingObserver(object):
         pass
 
 
-class AnalyzedVideoObserver(object):
-    def receive_analyzed_video(self, analyzed_frame, original_frame):
-        pass
-
-
 class Priority(object):
     Analyzer, Pathfinder, Misc = range(3)

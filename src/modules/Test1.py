@@ -17,6 +17,9 @@ if __name__ == '__main__':
         gray = cv2.GaussianBlur(gray, (5, 5), 0)
         gray = cv2.medianBlur(gray, 5)
 
+
+
+
         # Finds the cirles in the stream
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=100, minRadius=0, maxRadius=0)
 

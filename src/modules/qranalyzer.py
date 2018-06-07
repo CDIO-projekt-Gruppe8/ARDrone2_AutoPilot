@@ -10,9 +10,9 @@ def decode(im):
     decodedObjects = pyzbar.decode(im)
 
     # Print results
-    for obj in decodedObjects:
-        print('Type : ', obj.type)
-        print('Data : ', obj.data)
+   ## for obj in decodedObjects:
+     #   print('Type : ', obj.type)
+      #  print('Data : ', obj.data)
 
     return decodedObjects
 

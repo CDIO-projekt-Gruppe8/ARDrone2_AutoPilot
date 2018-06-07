@@ -4,6 +4,8 @@
 # TODO: analyze_video() should run in a separate thread [this also affects start() and stop()]
 
 import cv2
+from src.modules.qranalyzer import decode
+from src.modules.qranalyzer import display
 import numpy as np
 # Inspired by https://www.pyimagesearch.com/2014/07/21/detecting-circles-images-using-opencv-hough-circles/
 
@@ -22,9 +24,9 @@ while True:
     ret, frame = cap.read()
 
     # Rin operations on the frame
-    #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    #gray = cv2.medianBlur(gray, 5)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    gray = cv2.medianBlur(gray, 5)
 
     # Color operations on the frame
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -37,9 +39,13 @@ while True:
     res3 = cv2.bitwise_and(frame, frame, mask=color2)
 
     # Finds the cirles in the frames
-    circles = cv2.HoughCircles(color, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=100, minRadius=0, maxRadius=0)
+    #Gray
+    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=100, minRadius=0, maxRadius=0)
 
-    # If there are circles, draw then on the video feed
+    #Red
+    #circles = cv2.HoughCircles(color, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=30, minRadius=0, maxRadius=0)
+
+    # If there are circles, draw then on the videoq feed
     if circles is not None:
             # convert the (x, y) coordinates and radius of the circles to integers
 
@@ -53,6 +59,8 @@ while True:
                 # corresponding to the center of the circle
                 cv2.circle(frame, (x, y), r, (0, 255, 0), 4)
                 cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+            decodedObjects = decode(frame)
+            display(frame, decodedObjects)
 
     # Display the resulting frame
     cv2.imshow('Ring Detection',frame)

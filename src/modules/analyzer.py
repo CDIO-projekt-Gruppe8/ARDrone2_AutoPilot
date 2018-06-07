@@ -1,9 +1,10 @@
+from interfaces import Commander
 # TODO: Sanity and type check on all add/delete methods
 # TODO: Implement analyze_video()
 # TODO: analyze_video() should run in a separate thread [this also affects start() and stop()]
 
 
-class Analyzer(object):
+class Analyzer(Commander):
     _ring_observers = set()
     _analyzed_video_observers = set()
     _analyzing = False
@@ -19,6 +20,11 @@ class Analyzer(object):
         # Always call _analyzed_video_observer_callback()
         ret, frame = video.read()
         while self._analyzing and ret:
+            # TODO: Analyze the video
+            if video_url is None:
+                # If specific drone movement is needed for analysis, call send_command()
+                command = None  # TODO
+                self.send_command(command)
             ring = None  # TODO: Any ring found in the analysis - loop if multiple
             if not rings.contains(ring):
                 self._ring_observer_callback(ring)

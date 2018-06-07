@@ -1,11 +1,12 @@
 class Commander(object):
-    def __init__(self):
+    def __init__(self, priority):
+        self._priority = priority
         self._command_observers = set()
 
     def send_command(self, command):
         # priority should be a Priority object
         for obs in self._command_observers:
-            obs.receive_command(command)
+            obs.receive_command(command, self._priority)
 
     def add_command_observer(self, obs):
         self._command_observers.add(obs)
@@ -15,7 +16,7 @@ class Commander(object):
 
 
 class CommandObserver(object):
-    def receive_command(self, command):
+    def receive_command(self, command, priority):
         pass
 
 
@@ -27,3 +28,7 @@ class RingObserver(object):
 class AnalyzedVideoObserver(object):
     def receive_analyzed_video(self, analyzed_frame, original_frame):
         pass
+
+
+class Priority(object):
+    Analyzer, Pathfinder, Misc = range(3)

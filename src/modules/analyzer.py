@@ -3,10 +3,10 @@
 # TODO: Implement analyze_video()
 # TODO: analyze_video() should run in a separate thread [this also affects start() and stop()]
 
+import numpy as np #Install numpy to use the import numpy
 import cv2 #Install opencv-python to use the import cv2
 from src.modules.qranalyzer import decode
 from src.modules.qranalyzer import display
-import numpy as np #Install numpy to use the import numpy
 # Inspired by https://www.pyimagesearch.com/2014/07/21/detecting-circles-images-using-opencv-hough-circles/
 
 # Color definition
@@ -70,8 +70,7 @@ while True:
     cv2.imshow('Color',res)
     cv2.imshow('Color1', res2)
     cv2.imshow('Color2', res3)
-    #cv2.imshow("maskClose",maskClose)
-    #cv2.imshow("maskOpen",maskOpen)
+
     if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

@@ -16,8 +16,9 @@ class Pathfinder(Commander):
             self.send_command(command)
         pass
 
-    def penetrate_ring(self, ring, callback):  # Callback must take 1 parameter (bool, indicating if penetrated)
-        self.approach_ring(ring)
+    # Callback must take 1 parameter (bool, indicating if penetrated)
+    def penetrate_ring(self, qr_number, callback, analyzer):
+        self.approach_ring(qr_number, analyzer)
         passed = False
         while not passed:
             # TODO: Implement logic to enter the ring and determine when the ring is passed
@@ -28,12 +29,11 @@ class Pathfinder(Commander):
             callback(passed)
         pass
 
-    def approach_ring(self, ring):
+    def approach_ring(self, qr_number, analyzer):
         approached = False
-        if ring is None:
-            return
         while not approached:
             # TODO: Implement. Drone should be directly in front of ring/QR code
+            center = analyzer.get_ring_center(qr_number)
             command = None  # TODO
             self.send_command(command)
         pass

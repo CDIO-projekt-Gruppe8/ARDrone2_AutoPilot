@@ -99,66 +99,52 @@ while True:
 cap.release()
 cv2.destroyAllWindows()
 
-# class Analyzer(Commander):
-#     _ring_observers = set()
-#     _analyzed_video_observers = set()
-#     _analyzing = False
-#
-#     def analyze_video(self, video_URL, rings):
-#         priority = Priority.Analyzing
-#         video = None  # TODO: cv2.VideoCapture(video_URL)
-#         # Analyzes the video and searches for rings
-#         # video is the resulting object of cv2.VideoCapture(video_URL)
-#         # Rings contains all previously found rings
-#         # If a new ring is found, call _ring_observer_callback()
-#         # Always call _analyzed_video_observer_callback()
-#         ret, frame = video.read()
-#         while self._analyzing and ret:
-#             # TODO: Analyze the video
-#             if False:
-#                 # If specific drone movement is needed for analysis, call send_command()
-#                 command = None  # TODO
-#                 self.send_command(command, priority)
-#             #ring = None  # TODO: Any ring found in the analysis - loop if multiple
-#             if not rings.contains(ring):
-#                 self._ring_observer_callback(ring)
-#             analyzed_video = None  # TODO: A single, analyzed/augmented frame
-#             self._analyzed_video_observer_callback(analyzed_video)
-#             pass
-#
-#     def start(self):
-#         # TODO: Check if analyzer-thread is running, create it if not
-#         self._analyzing = True
-#
-#     def pause(self):
-#         self._analyzing = False
-#
-#     def stop(self):
-#         # TODO: Check if analyzer-thread is running, close if it is
-#         self._analyzing = False
-#
-#     def _analyzed_video_observer_callback(self, analyzed_video):
-#         for obs in self._analyzed_video_observers:
-#             obs.receive_analyzed_video(analyzed_video)
-#
-#     def _ring_observer_callback(self, ring):
-#         for obs in self._ring_observers:
-#             obs.add_ring(ring)
-#
-#     def add_ring_observer(self, obs):
-#         self._ring_observers.add(obs)
-#
-#     def del_ring_observer(self, obs):
-#         try:
-#             self._ring_observers.remove(obs)
-#         except KeyError:
-#             pass  # TODO
-#
-#     def add_analyzed_video_observer(self, obs):
-#         self._analyzed_video_observers.add(obs)
-#
-#     def del_analyzed_video_observer(self, obs):
-#         try:
-#             self._analyzed_video_observers.remove(obs)
-#         except KeyError:
-#             pass  # TODO
+class Analyzer(object):
+    _ring_observers = set()
+    _analyzing = False
+
+    def analyze_video(self, video_url, current_qr_number):
+        if video_url is None:
+            return
+        video = None  # TODO: cv2.VideoCapture(video_URL)
+        # Analyzes the video and searches for rings
+        # video is the resulting object of cv2.VideoCapture(video_URL)
+        # Rings contains all previously found rings
+        # If a new ring is found, call _ring_observer_callback()
+        ret, frame = video.read()
+        while self._analyzing and ret:
+            # TODO: Analyze the video
+            qr_number = None
+            if qr_number is current_qr_number:
+                # Found the ring of interest. Stop analyzing.
+                self._ring_observer_callback()
+                break
+            pass
+
+    def get_ring_center(self, qr_number):
+        # TODO: Returns the x-y coordinates of the ring
+        pass
+
+    def start(self):
+        # TODO: Check if analyzer-thread is running, create it if not
+        self._analyzing = True
+
+    def pause(self):
+        self._analyzing = False
+
+    def stop(self):
+        # TODO: Check if analyzer-thread is running, close if it is
+        self._analyzing = False
+
+    def _ring_observer_callback(self):
+        for obs in self._ring_observers:
+            obs.ring_found()
+
+    def add_ring_observer(self, obs):
+        self._ring_observers.add(obs)
+
+    def del_ring_observer(self, obs):
+        try:
+            self._ring_observers.remove(obs)
+        except KeyError:
+            pass  # TODO

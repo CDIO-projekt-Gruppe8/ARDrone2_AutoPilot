@@ -1,4 +1,3 @@
-#from interfaces import Commander, Priority
 # TODO: Sanity and type check on all add/delete methods
 # TODO: Implement analyze_video()
 # TODO: analyze_video() should run in a separate thread [this also affects start() and stop()]
@@ -81,7 +80,7 @@ while True:
         circlesStatusString = "Circle Status:  Circle NOT FOUND"
 
     #  Display the resulting frame
-    
+
     cv2.putText(frame, qrStatusString, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0, 0, 255), 2)
     cv2.putText(frame, circlesStatusString, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0, 0, 255), 2)
     cv2.imshow('Ring Detection',frame)

@@ -16,6 +16,8 @@ upperBound1=np.array([180,255,255])
 lowerBound2=np.array([0,50,50])
 upperBound2=np.array([10,255,255])
 
+qrStatus = 0
+circlesStatus = 0
 # Initiate video capture
 cap = cv2.VideoCapture(0)
 
@@ -39,14 +41,26 @@ while True:
     res3 = cv2.bitwise_and(frame, frame, mask=color2)
 
     # Finds the cirles in the frames
-    #Gray
+    #  Gray
     circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=100, minRadius=0, maxRadius=0)
 
-    #Red
-    #circles = cv2.HoughCircles(color, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=30, minRadius=0, maxRadius=0)
+    #  Red
+    #  circles = cv2.HoughCircles(color, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=30, minRadius=0, maxRadius=0)
+    decodedObjects = decode(frame)
+    # If there are QRCODES, draw then on the video feed
 
-    # If there are circles, draw then on the videoq feed
+    if len(decodedObjects) is not 0:
+        display(frame, decodedObjects)
+        qrStatus = 1
+        qrStatusString = "QR STATUS: QR FOUND"
+    else:
+        qrStatus = 0
+        qrStatusString = "QR STATUS: QR NOT FOUND"
+
+    # If there are circles, draw then on the video feed
     if circles is not None:
+            circlesStatus = 1
+            circlesStatusString = "Circle Status: Circle FOUND"
             # convert the (x, y) coordinates and radius of the circles to integers
 
             print("Ring observed")
@@ -59,14 +73,21 @@ while True:
                 # corresponding to the center of the circle
                 cv2.circle(frame, (x, y), r, (0, 255, 0), 4)
                 cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
-            decodedObjects = decode(frame)
-            display(frame, decodedObjects)
+    else:
+        circlesStatus = 0
+        circlesStatusString = "Circle Status:  Circle NOT FOUND"
 
-    # Display the resulting frame
+    #  Display the resulting frame
+    
+    cv2.putText(frame, qrStatusString, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0, 0, 255), 2)
+    cv2.putText(frame, circlesStatusString, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0, 0, 255), 2)
     cv2.imshow('Ring Detection',frame)
-    cv2.imshow('Color',res)
-    cv2.imshow('Color1', res2)
-    cv2.imshow('Color2', res3)
+    #  cv2.imshow('Color',res)
+    #  cv2.imshow('Color1', res2)
+    #  cv2.imshow('Color2', res3)
+    #  print 'qr status: ', qrStatus
+    #  print 'circle status', circlesStatus
+
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
             break

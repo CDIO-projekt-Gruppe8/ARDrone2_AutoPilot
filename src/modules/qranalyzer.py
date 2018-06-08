@@ -4,7 +4,6 @@ import numpy as np
 import cv2
 
 
-
 def decode(im):
     # Find barcodes and QR codes
     decodedObjects = pyzbar.decode(im)
@@ -40,4 +39,4 @@ def display(im, decodedObjects):
 
     for obj in decodedObjects:
         qrtxt = obj.data
-        print('\n QRCODE: ',qrtxt, '\n')
+        print 'QRCODE: ', qrtxt

@@ -3,10 +3,10 @@
 # TODO: Implement analyze_video()
 # TODO: analyze_video() should run in a separate thread [this also affects start() and stop()]
 
-import cv2
+import cv2 #Installere opencv-python for at benytte cv2
 from src.modules.qranalyzer import decode
 from src.modules.qranalyzer import display
-import numpy as np
+import numpy as np 
 # Inspired by https://www.pyimagesearch.com/2014/07/21/detecting-circles-images-using-opencv-hough-circles/
 
 # Color definition
@@ -23,6 +23,9 @@ while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
 
+    # Resize the frame for faster processing
+    #frame = cv2.resize(frame,(340,220))
+
     # Rin operations on the frame
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -37,6 +40,12 @@ while True:
     res = cv2.bitwise_and(frame, frame, mask=color)
     res2 = cv2.bitwise_and(frame, frame, mask=color1)
     res3 = cv2.bitwise_and(frame, frame, mask=color2)
+
+    kernelOpen=np.ones((5,5))
+    kernelClose=np.ones((20,20))
+
+    maskOpen=cv2.morphologyEx(color,cv2.MORPH_OPEN,kernelOpen)
+    maskClose=cv2.morphologyEx(maskOpen,cv2.MORPH_CLOSE,kernelClose)
 
     # Finds the cirles in the frames
     #Gray
@@ -67,7 +76,8 @@ while True:
     cv2.imshow('Color',res)
     cv2.imshow('Color1', res2)
     cv2.imshow('Color2', res3)
-
+    #cv2.imshow("maskClose",maskClose)
+    #cv2.imshow("maskOpen",maskOpen)
     if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

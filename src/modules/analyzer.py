@@ -61,6 +61,13 @@ while True:
         display(frame, decodedObjects)
         qrStatus = 1
         qrStatusString = "QR STATUS: QR FOUND"
+        for obj in decodedObjects:
+            qrtop = obj.rect[1]
+            qrheight = obj.rect[3]
+            qr = obj.rect, qrtop, qrheight
+            qrData = obj.data
+            print qr
+
     else:
         qrStatus = 0
         qrStatusString = "QR STATUS: QR NOT FOUND"
@@ -71,7 +78,8 @@ while True:
             circlesStatusString = "Circle Status: Circle FOUND"
             # convert the (x, y) coordinates and radius of the circles to integers
 
-            print("Ring observed")
+
+            #print("Ring observed")
 
             circles = np.round(circles[0, :]).astype("int")
 
@@ -87,17 +95,22 @@ while True:
                 distance = distanceanalyzer(x, y, width/2, height/2)
                 distanceString = map(int,distance)
                 cv2.putText(frame, repr(distanceString), (((x+(width/2))/2), ((y+(height/2))/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (102, 0, 255), 1)
+
     else:
         circlesStatus = 0
         circlesStatusString = "Circle Status:  Circle NOT FOUND"
 
-
+    #  Draw box around both objects
+    if qrStatus is 1 and circlesStatus is 1:
+        cv2.rectangle(frame, (x + r+10, y - r-10), (x - r-10, qrtop + qrheight+10), (0, 128, 255), 1)
+        objectString = 'RingObject ' + qrData + ' found'
+        cv2.putText(frame, objectString, (x - r-10, y - r-12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 128, 255), 2)
     #  Display the resulting frame
 
     cv2.putText(frame, qrStatusString, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(102, 0, 255), 1)
     cv2.putText(frame, circlesStatusString, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(102, 0, 255), 1)
     cv2.imshow('Ring Detection',frame)
-    #  cv2.imshow('Color',res)
+    #cv2.imshow('Color',res)
     #  cv2.imshow('Color1', res2)
     #  cv2.imshow('Color2', res3)
     #  print 'qr status: ', qrStatus

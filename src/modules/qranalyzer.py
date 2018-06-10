@@ -19,7 +19,6 @@ def decode(im):
 # Display barcode and QR code location
 def display(im, decodedObjects):
     # Loop over all decoded objects
-    qrtxt = ''
     for decodedObject in decodedObjects:
         points = decodedObject.polygon
 
@@ -28,7 +27,7 @@ def display(im, decodedObjects):
             hull = cv2.convexHull(np.array([point for point in points], dtype=np.float32))
             hull = list(map(tuple, np.squeeze(hull)))
         else:
-            hull = points;
+            hull = points
 
         # Number of points in the convex hull
         n = len(hull)

@@ -6,6 +6,8 @@ import numpy as np #Install numpy to use the import numpy
 import cv2 #Install opencv-python to use the import cv2
 from src.modules.qranalyzer import decode
 from src.modules.qranalyzer import display
+from src.modules.distanceanalyzer import distanceanalyzer
+
 # Inspired by https://www.pyimagesearch.com/2014/07/21/detecting-circles-images-using-opencv-hough-circles/
 
 # Color definition
@@ -23,6 +25,10 @@ cap = cv2.VideoCapture(0)
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
+
+    #  Finds center of frame and draw it on frame
+    height, width = frame.shape[:2]
+    cv2.rectangle(frame, ((width/2) - 5, (height/2) - 5), ((width/2) + 5, (height/2) + 5), (220, 220, 220), -1)
 
     # Resize the frame for faster processing
     #frame = cv2.resize(frame,(340,220))
@@ -44,7 +50,7 @@ while True:
 
     # Finds the cirles in the frames
     #  Gray
-    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=100, minRadius=0, maxRadius=0)
+    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 260, param1=40, param2=100, minRadius=0, maxRadius=0)
 
     #  Red
     #  circles = cv2.HoughCircles(color, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=30, minRadius=0, maxRadius=0)
@@ -75,14 +81,21 @@ while True:
                 # corresponding to the center of the circle
                 cv2.circle(frame, (x, y), r, (0, 255, 0), 4)
                 cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+
+                #  calculate the distance form the center of the ring to the center of the frame and show it
+                cv2.line(frame, (x, y), (width/2, height/2), (220, 220, 220), 1)
+                distance = distanceanalyzer(x, y, width/2, height/2)
+                distanceString = map(int,distance)
+                cv2.putText(frame, repr(distanceString), (((x+(width/2))/2), ((y+(height/2))/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (102, 0, 255), 1)
     else:
         circlesStatus = 0
         circlesStatusString = "Circle Status:  Circle NOT FOUND"
 
+
     #  Display the resulting frame
 
-    cv2.putText(frame, qrStatusString, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0, 0, 255), 2)
-    cv2.putText(frame, circlesStatusString, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0, 0, 255), 2)
+    cv2.putText(frame, qrStatusString, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(102, 0, 255), 1)
+    cv2.putText(frame, circlesStatusString, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(102, 0, 255), 1)
     cv2.imshow('Ring Detection',frame)
     #  cv2.imshow('Color',res)
     #  cv2.imshow('Color1', res2)

@@ -1,3 +1,4 @@
+import time
 from interfaces import CommandObserver, RingObserver
 from modules.analyzer import Analyzer
 from modules.pathfinder import Pathfinder
@@ -6,48 +7,81 @@ from modules.communication import Communication
 
 
 class Drone(CommandObserver, RingObserver):
+
+    _penetrating = False
+
     def __init__(self):
-        self._number_of_rings = 10
-        self._current_ring = 0
-        self._rings = [None] * self._number_of_rings
-        self._analyzer = Analyzer(self)
+        print("Drone initiating")
+        self._analyzer = Analyzer()
         self._communication = Communication()
-        self._pathfinder = Pathfinder(self)
+        self._pathfinder = Pathfinder()
+
+        self._video_url = "tcp://localhost:5555"  # TODO: Insert correct URL
+        self._number_of_rings = 10  # TODO: Real number? Determine dynamically? How long should it search?
+        self._current_qr_number = 1
+        self._command = None
 
     def run(self):
-        """
-        PSEUDO CODE:
+        ready, msg = self._communication.test()
+        if ready:
+            print("Take off with msg: " + msg)
+            # Listen for events
+            self.add_command_observer(self)
+            self.add_ring_observer(self)
+            # Initiate pathfinder
+            self._pathfinder.explore()
+            self._pathfinder.start()
+            # Initiate analyzer
+            self._analyzer.start()
+            self._analyzer.analyze_video(self._video_url, self._current_qr_number)
+        else:
+            print(msg)
 
-        Test communications
-        initiate analyzer
-        initiate pathfinder
-        START EXPLORE
-        """
+    def receive_command(self, command):
+        self._command = command
+
+    def _send_command(self):
+        while True:
+            time.sleep(0.03)  # ARDrone claims to work best with commands every 0.03 sec
+            if self._command is not None:
+                self._communication.move(self._command)
         pass
 
-    def initiate_drone_configuration(self):
-        pass
+    def _shutdown(self):
+        self._pathfinder.stop()
+        self._analyzer.stop()
+        self._communication.land()
 
-    def receive_command(self, command, priority):
-        # TODO: Command is received from analyzer of pathfinder, determine how to react based on priority
-        pass
+    def ring_found(self):
+        self._penetrate()
 
-    def add_ring(self, ring):
-        # TODO: Ring is found by analyzer (probably while exploring), add it to the list of rings
-        """
-        PSEUDO CODE:
+    def _ring_passed(self, passed):
+        if not passed:
+            print('Failed at passing ring!')
+            print('Trying again')
+            self._penetrate()
+        else:
+            if self._current_qr_number == self._number_of_rings:
+                self._shutdown()
+            else:
+                self._penetrating = False
+                self._current_qr_number += 1
+                self._pathfinder.start()
+                self._analyzer.analyze_video(self._video_url, self._current_qr_number)
 
-        rings[ring.qr] = ring
-        if ring.qr == _current_ring:
-            PAUSE EXPLORE
-            PENETRATE
+    def _penetrate(self):
+        self._penetrating = True
+        self._pathfinder.pause()
+        self._pathfinder.penetrate_ring(self._current_qr_number, self._ring_passed, self._analyzer)
 
-            when PENETRATE is done:
-                if ring.qr == _number_of_rings:
-                    STOP EXPLORE
-                    STOP ANALYZER
-                    LAND DRONE
-                else:
-                    START EXPLORE
-        """
-        pass
+    def add_command_observer(self, observer):
+        self._pathfinder.add_command_observer(observer)
+
+    def add_ring_observer(self, observer):
+        self._analyzer.add_ring_observer(observer)
+
+    def del_command_observer(self, observer):
+        self._pathfinder.del_command_observer(observer)
+
+    def del_ring_observer(self, observer):
+        self._analyzer.del_ring_observer(observer)

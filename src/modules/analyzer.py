@@ -13,7 +13,6 @@ from src.modules.distanceanalyzer import distanceanalyzer
 class Analyzer(object):
     _ring_observers = set()
     _analyzing = False
-    distance = None
 
     # TODO: To be removed
     def test(self):
@@ -30,8 +29,11 @@ class Analyzer(object):
 
         qrStatus = False
         circlesStatus = False
-        # Initiate video capture
-        cap = cv2.VideoCapture(0)
+        qrData = None
+        distance = None
+
+    # Initiate video capture
+        cap = cv2.VideoCapture(video_url)
         # Capture first frame
         ret, frame = cap.read()
 
@@ -77,10 +79,11 @@ class Analyzer(object):
                     qrheight = obj.rect[3]
                     qr = obj.rect, qrtop, qrheight
                     qrData = obj.data
-                    print qr
-                    if qr is current_qr_number:
+                    if qrData is current_qr_number:
                         break
-            print qrStatusString
+
+            #print qrStatusString
+
             circlesStatusString = "Circle Status:  Circle NOT FOUND"
             # If there are circles, draw then on the video feed
 
@@ -103,9 +106,19 @@ class Analyzer(object):
                     distance = distanceanalyzer(x, y, width/2, height/2)
                     distanceString = map(int, distance)
                     cv2.putText(frame, repr(distanceString), (((x+(width/2))/2), ((y+(height/2))/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (102, 0, 255), 1)
-            print circlesStatusString
+
+            #print circlesStatusString
+            #qrStatus is True and qrData is not None and
+            #and circlesStatus is True
+
             #  Draw box around both objects
-            if qrStatus and qr is not None and qr is current_qr_number and circlesStatus:
+            #print 'currentQR: ' + str(current_qr_number)
+            print qrData
+
+            if qrData is '1':
+                print 'Aiwa'
+
+            if int(qrData) is current_qr_number:
                 cv2.rectangle(frame, (x + r+10, y - r-10), (x - r-10, qrtop + qrheight+10), (0, 128, 255), 1)
                 objectString = 'RingObject ' + qrData + ' found'
                 cv2.putText(frame, objectString, (x - r-10, y - r-12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 128, 255), 2)
@@ -126,8 +139,8 @@ class Analyzer(object):
             #  print 'qr status: ', qrStatus
             #  print 'circle status', circlesStatus
 
-            # if cv2.waitKey(1) & 0xFF == ord('q'):
-            #     break
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
             # Capture frame-by-frame
             ret, frame = cap.read()

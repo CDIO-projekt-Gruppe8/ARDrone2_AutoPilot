@@ -21,8 +21,8 @@ class Pathfinder(Commander):
         pass
 
     # Callback must take 1 parameter (bool, indicating if penetrated)
-    def penetrate_ring(self, qr_number, callback, analyzer):
-        self.approach_ring(qr_number, analyzer)
+    def penetrate_ring(self, callback, analyzer):
+        self.approach_ring(analyzer)
         passed = False
         placeholder_int = 1
         while not passed:
@@ -47,25 +47,13 @@ class Pathfinder(Commander):
                     # Centered
                     approached = True
                 else:
-                    command = self._determine_movement(ring_center)
+                    command = _determine_movement(ring_center)
                     self.send_command(command)
             else:
-                command = self._determine_movement(qr_center)
+                command = _determine_movement(qr_center)
                 self.send_command(command)
             command = None  # TODO
             self.send_command(command)
-
-    def _determine_movement(self, center):
-        if center[0] > center[1]:
-            if center[0] > 0:
-                return Commands.Right
-            else:
-                return Commands.Left
-        else:
-            if center[1] > 0:
-                return Commands.Down
-            else:
-                return Commands.Up
 
     def start(self):
         # TODO: Check if pathfinder-thread is running, create it if not
@@ -77,3 +65,17 @@ class Pathfinder(Commander):
     def stop(self):
         # TODO: Check if pathfinder-thread is running, close if it is
         self._exploring = False
+
+
+# Static functions
+def _determine_movement(center):
+    if center[0] > center[1]:
+        if center[0] > 0:
+            return Commands.Right
+        else:
+            return Commands.Left
+    else:
+        if center[1] > 0:
+            return Commands.Down
+        else:
+            return Commands.Up

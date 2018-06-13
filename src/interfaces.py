@@ -26,4 +26,3 @@ class RingObserver(object):
 
 class Commands(object):
     Up, Down, Left, Right, Forward, Back, RotateLeft, RotateRight = range(8)
-

@@ -1,7 +1,6 @@
 # TODO: Implement lift(), land(), move(), set_drone_configuration()
-from src.interfaces import Direction
+from src.interfaces import Commands
 import socket
-import time
 
 # PCMD
 # 1: sequence number
@@ -39,10 +38,10 @@ class Communication(object):
     emergencyReset = "AT*REF={0},290717952\r\n"
     setMaxAltitude1m = "AT*CONFIG=1,\"control:altitude_max\",\"1000\"\r\n"
 
-    # VideoStream
-
     def test(self):
-        return True, "test"
+        if self.ip is "192.168.1.1":
+            return True, "test"
+        return False, "test"
 
     def lift(self):
         self.sockUDP.sendto(self.droneLift.format(self.sequence_num), ('192.168.1.1', 5556))
@@ -56,25 +55,25 @@ class Communication(object):
         self.sockUDP.sendto(self.droneHover.format(self.sequence_num), ('192.168.1.1', 5556))
         self.sequence_num += 1
 
-    def setmaxaltitude(self):
+    def set_max_altitude(self):
         self.sockUDP.sendto(self.setMaxAltitude1m.format(self.sequence_num), ('192.168.1.1', 5556))
         self.sequence_num += 1
 
     def move(self, direction):
-        if direction is Direction.Up:
+        if direction is Commands.Up:
             self.sockUDP.sendto(self.droneUp.format(self.sequence_num), self.ip, self.port)
-        elif direction is Direction.Down:
+        elif direction is Commands.Down:
             self.sockUDP.sendto(self.droneDown.format(self.sequence_num), self.ip, self.port)
-        elif direction is Direction.Back:
+        elif direction is Commands.Back:
             self.sockUDP.sendto(self.droneBack.format(self.sequence_num), self.ip, self.port)
-        elif direction is Direction.Forward:
+        elif direction is Commands.Forward:
             self.sockUDP.sendto(self.droneForward.format(self.sequence_num), self.ip, self.port)
-        elif direction is Direction.Left:
+        elif direction is Commands.Left:
             self.sockUDP.sendto(self.droneLeft.format(self.sequence_num), self.ip, self.port)
-        elif direction is Direction.Right:
+        elif direction is Commands.Right:
             self.sockUDP.sendto(self.droneRight.format(self.sequence_num), self.ip, self.port)
-        elif direction is Direction.RotateLeft:
+        elif direction is Commands.RotateLeft:
             self.sockUDP.sendto(self.droneRotLeft.format(self.sequence_num), self.ip, self.port)
-        elif direction is Direction.RotateRight:
+        elif direction is Commands.RotateRight:
             self.sockUDP.sendto(self.droneRotRight.format(self.sequence_num), self.ip, self.port)
         self.sequence_num += 1

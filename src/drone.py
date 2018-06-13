@@ -24,7 +24,7 @@ class Drone(CommandObserver, RingObserver):
     def run(self):
         ready, msg = self._communication.test()
         if ready:
-            self._communication.setmaxaltitude()
+            self._communication.set_max_altitude()
             print("Take off with msg: " + msg)
             # Listen for events
             self.add_command_observer(self)
@@ -73,7 +73,7 @@ class Drone(CommandObserver, RingObserver):
     def _penetrate(self):
         self._penetrating = True
         self._pathfinder.pause()
-        self._pathfinder.penetrate_ring(self._current_qr_number, self._ring_passed, self._analyzer)
+        self._pathfinder.penetrate_ring(callback=self._ring_passed, analyzer=self._analyzer)
 
     def add_command_observer(self, observer):
         self._pathfinder.add_command_observer(observer)

@@ -2,13 +2,14 @@
 # TODO: Implement analyze_video()
 # TODO: analyze_video() should run in a separate thread [this also affects start() and stop()]
 
-import numpy as np #Install numpy to use the import numpy
-import cv2 #Install opencv-python to use the import cv2
-from src.modules.qranalyzer import decode
-from src.modules.qranalyzer import display
-from src.modules.distanceanalyzer import distanceanalyzer
+import numpy as np  # Install numpy to use the import numpy
+import cv2  # Install opencv-python to use the import cv2
+from utils import decode_qr
+from utils import display_qr
+from utils import distance_analyzer
 
 # Inspired by https://www.pyimagesearch.com/2014/07/21/detecting-circles-images-using-opencv-hough-circles/
+
 
 class Analyzer(object):
     _ring_observers = set()
@@ -16,19 +17,8 @@ class Analyzer(object):
     _ring_center = None
     _qr_center = None
 
-    # TODO: To be removed
-    def test(self):
-        print 'test'
-
     def analyze_video(self, video_url, current_qr_number):
         print 'analyze beginning'
-        # Color definition
-        lowerBound1=np.array([170,50,50])
-        upperBound1=np.array([180,255,255])
-
-        lowerBound2=np.array([0,50,50])
-        upperBound2=np.array([10,255,255])
-
         # Initiate video capture
         cap = cv2.VideoCapture(video_url)
         # Capture first frame
@@ -36,10 +26,15 @@ class Analyzer(object):
 
         print 'while loop beginning'
         while self._analyzing and ret:
-            qrData = 0
-            qrStatus = False
-            circlesStatus = False
-            distance = None
+            x = None
+            y = None
+            r = None
+            qr_top = None
+            qr_height = None
+            qr_data = 0
+            qr_status = False
+            circles_status = False
+            ring_center = None
 
         #  Finds center of frame and draw it on frame
             height, width = frame.shape[:2]
@@ -50,57 +45,44 @@ class Analyzer(object):
             gray = cv2.GaussianBlur(gray, (5, 5), 0)
             gray = cv2.medianBlur(gray, 5)
 
-            # Color operations on the frame
-            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-            color1 = cv2.inRange(hsv, lowerBound1, upperBound1)
-            color2 = cv2.inRange(hsv, lowerBound2, upperBound2)
-            color = color1+color2
-
-            res = cv2.bitwise_and(frame, frame, mask=color)
-            res2 = cv2.bitwise_and(frame, frame, mask=color1)
-            res3 = cv2.bitwise_and(frame, frame, mask=color2)
-
-            # Finds the cirles in the frames
+            # Finds the circles in the frames
             #  Gray
-            circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 1000, param1=100, param2=100, minRadius=0, maxRadius=0)
-
-            #  Red
-            #  circles = cv2.HoughCircles(color, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=30, minRadius=0, maxRadius=0)
+            circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 1000,
+                                       param1=100, param2=100, minRadius=0, maxRadius=0)
 
             # Decodes a QR code
-            decodedObjects = decode(frame)
+            decoded_objects = decode_qr(frame)
 
-            # If there are QRCODES, draw then on the video feed
-            qrStatusString = "QR STATUS: QR NOT FOUND"
-            if len(decodedObjects) is not 0:
-                display(frame, decodedObjects)
-                qrStatus = True
-                qrStatusString = "QR STATUS: QR FOUND"
-                for obj in decodedObjects:
+            # If there are QR codes, draw then on the video feed
+            qr_status_string = "QR STATUS: QR NOT FOUND"
+            if len(decoded_objects) is not 0:
+                display_qr(frame, decoded_objects)
+                qr_status = True
+                qr_status_string = "QR STATUS: QR FOUND"
+                for obj in decoded_objects:
                     qr_left = obj.rect[0]
                     qr_top = obj.rect[1]
                     qr_width = obj.rect[2]
                     qr_height = obj.rect[3]
-                    qr = obj.rect, qr_top, qr_height
-                    qrData = obj.data
+                    qr_data = obj.data
                     try:
-                        qrData = int(qrData)
+                        qr_data = int(qr_data)
                     except ValueError:
-                        qrData = -1
-                    if qrData is current_qr_number:
+                        qr_data = -1
+                    if qr_data is current_qr_number:
                         qr_x = qr_left + (qr_width/2)
                         qr_y = qr_top + (qr_height/2)
                         cv2.line(frame, (qr_x, qr_y), (width/2, height/2), (220, 220, 220), 1)
                         self.set_qr_center(
-                            distanceanalyzer(qr_x, qr_y, width / 2, height / 2))
+                            distance_analyzer(qr_x, qr_y, width / 2, height / 2))
                         break
 
-            circlesStatusString = "Circle Status:  Circle NOT FOUND"
+            circles_status_string = "Circle Status:  Circle NOT FOUND"
             # If there are circles, draw then on the video feed
 
             if circles is not None:
-                circlesStatus = True
-                circlesStatusString = "Circle Status: Circle FOUND"
+                circles_status = True
+                circles_status_string = "Circle Status: Circle FOUND"
 
                 # convert the (x, y) coordinates and radius of the circles to integers
                 circles = np.round(circles[0, :]).astype("int")
@@ -112,31 +94,27 @@ class Analyzer(object):
                     cv2.circle(frame, (x, y), r, (0, 255, 0), 4)
                     cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 
-                    #  calculate the distance form the center of the ring to the center of the frame and show it
+                    #  calculate the ring_center form the center of the ring to the center of the frame and show it
                     cv2.line(frame, (x, y), (width/2, height/2), (220, 220, 220), 1)
-                    distance = distanceanalyzer(x, y, width/2, height/2)
-                    distanceString = map(int, distance)
-                    cv2.putText(frame, repr(distanceString), (((x+(width/2))/2), ((y+(height/2))/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (102, 0, 255), 1)
+                    ring_center = distance_analyzer(x, y, width/2, height/2)
+                    ring_center_string = map(int, ring_center)
+                    cv2.putText(frame, repr(ring_center_string),
+                                (((x+(width/2))/2), ((y+(height/2))/2)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (102, 0, 255), 1)
 
             #  Draw box around both objects and sets coordinates of ring center
-            if qrStatus and qrData is not None and qrData is current_qr_number and circlesStatus:
+            if qr_status and qr_data is not None and qr_data is current_qr_number and circles_status:
                 cv2.rectangle(frame, (x + r+10, y - r-10), (x - r-10, qr_top + qr_height+10), (0, 128, 255), 1)
-                objectString = 'RingObject ' + str(qrData) + ' found'
-                cv2.putText(frame, objectString, (x - r-10, y - r-12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 128, 255), 2)
-                self.set_ring_center(distance)
+                object_string = 'RingObject ' + str(qr_data) + ' found'
+                cv2.putText(frame, object_string, (x - r-10, y - r-12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 128, 255), 2)
+                self.set_ring_center(ring_center)
                 self._ring_observer_callback()
                 break
 
             # Display the resulting frame
-            cv2.putText(frame, qrStatusString, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(102, 0, 255), 1)
-            cv2.putText(frame, circlesStatusString, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(102, 0, 255), 1)
+            cv2.putText(frame, qr_status_string, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (102, 0, 255), 1)
+            cv2.putText(frame, circles_status_string, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (102, 0, 255), 1)
             cv2.imshow('Ring Detection', frame)
-
-            #cv2.imshow('Color',res)
-            #  cv2.imshow('Color1', res2)
-            #  cv2.imshow('Color2', res3)
-            #  print 'qr status: ', qrStatus
-            #  print 'circle status', circlesStatus
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -148,20 +126,6 @@ class Analyzer(object):
         print 'while loop exited'
         cap.release()
         cv2.destroyAllWindows()
-
-
-        # Analyzes the video and searches for rings
-        # video is the resulting object of cv2.VideoCapture(video_URL)
-        # Rings contains all previously found rings
-        # If a new ring is found, call _ring_observer_callback()
-        #while self._analyzing and ret:
-            # TODO: Analyze the video
-            #qr_number = None
-            #if qr_number is current_qr_number:
-                # Found the ring of interest. Stop analyzing.
-                #self._ring_observer_callback()
-                #break
-            #pass
 
     def get_qr_center(self):
         return self._qr_center

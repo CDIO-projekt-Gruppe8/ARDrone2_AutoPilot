@@ -24,6 +24,6 @@ class RingObserver(object):
         pass
 
 
-class Direction(object):
+class Commands(object):
     Up, Down, Left, Right, Forward, Back, RotateLeft, RotateRight = range(8)
 

@@ -1,4 +1,5 @@
-from interfaces import Commander
+import time
+from interfaces import Commander, Commands
 # TODO: Sanity check on rings
 # TODO: Implement explore(), penetrate_ring(), approach_ring()
 # TODO: (while loops of) explore(), penetrate_ring(), approach_ring() should all run in a separate thread
@@ -8,6 +9,21 @@ class Pathfinder(Commander):
     _exploring = False
 
     def explore(self):
+
+        Ross = 0
+        while self._exploring:
+            qrStatus = 0  # qrStatus ??
+            # self.send_command(setspeed.drone(0.3))
+            # self.send_command(drone.takeoff)
+
+            if Ross is 4:
+                self.send_command(Commands.Up)
+                # self.send_command(drone.moveup)
+                time.sleep(2)
+                Ross = 0
+
+            self.command_send(drone.turnAngle(90))  # 90 grader ??
+            Ross = Ross + 1
         while self._exploring:
             # TODO: Define the exploration behaviour of the drone
             # Should it move directly forward until it would hit a wall, then turn sharply?

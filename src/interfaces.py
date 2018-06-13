@@ -22,3 +22,8 @@ class CommandObserver(object):
 class RingObserver(object):
     def ring_found(self):
         pass
+
+
+class Direction(object):
+    Up, Down, Left, Right, Forward, Back, RotateLeft, RotateRight = range(8)
+

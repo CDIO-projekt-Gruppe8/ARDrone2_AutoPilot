@@ -15,14 +15,6 @@ import socket
 
 
 class Communication(object):
-
-    sockUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    port = 5556
-
-    ip = "192.168.1.1"
-
-    sequence_num = 1
-
     # ATCommands
     droneLift = "AT*REF={0},290718208\r\n"
     droneLand = "AT*REF={0},290717696\r\n"
@@ -34,14 +26,20 @@ class Communication(object):
     droneLeft = "AT*PCMD={0},1,-1102263091,0,0,0\r\n"
     droneRight = "AT*PCMD={0},1,1045220557,0,0,0\r\n"
     droneRotLeft = "AT*PCMD={0},1,0,0,0,-1085485875\r\n"
-    droneRotRight = "AT*PCMD={0},1,0,0,0,1061997773\r\n"
+    droneRotRight = "AT*PCMD={0},1,0,0,0,1036831949\r\n"
     emergencyReset = "AT*REF={0},290717952\r\n"
     setMaxAltitude1m = "AT*CONFIG=1,\"control:altitude_max\",\"1000\"\r\n"
 
+    def __init__(self):
+        self.sockUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.port = 5556
+        self.ip = '192.168.1.1'
+        self.sequence_num = 1
+
     def test(self):
-        if self.ip is "192.168.1.1":
-            return True, "test"
-        return False, "test"
+        if self.ip == "192.168.1.1":
+            return True, "T1"
+        return False, "T2"
 
     def lift(self):
         self.sockUDP.sendto(self.droneLift.format(self.sequence_num), ('192.168.1.1', 5556))
@@ -60,20 +58,23 @@ class Communication(object):
         self.sequence_num += 1
 
     def move(self, direction):
+        if direction is Commands.Hover:
+            self.hover()
+            return
         if direction is Commands.Up:
-            self.sockUDP.sendto(self.droneUp.format(self.sequence_num), self.ip, self.port)
+            self.sockUDP.sendto(self.droneUp.format(self.sequence_num), (self.ip, self.port))
         elif direction is Commands.Down:
-            self.sockUDP.sendto(self.droneDown.format(self.sequence_num), self.ip, self.port)
+            self.sockUDP.sendto(self.droneDown.format(self.sequence_num), (self.ip, self.port))
         elif direction is Commands.Back:
-            self.sockUDP.sendto(self.droneBack.format(self.sequence_num), self.ip, self.port)
+            self.sockUDP.sendto(self.droneBack.format(self.sequence_num), (self.ip, self.port))
         elif direction is Commands.Forward:
-            self.sockUDP.sendto(self.droneForward.format(self.sequence_num), self.ip, self.port)
+            self.sockUDP.sendto(self.droneForward.format(self.sequence_num), (self.ip, self.port))
         elif direction is Commands.Left:
-            self.sockUDP.sendto(self.droneLeft.format(self.sequence_num), self.ip, self.port)
+            self.sockUDP.sendto(self.droneLeft.format(self.sequence_num), (self.ip, self.port))
         elif direction is Commands.Right:
-            self.sockUDP.sendto(self.droneRight.format(self.sequence_num), self.ip, self.port)
+            self.sockUDP.sendto(self.droneRight.format(self.sequence_num), (self.ip, self.port))
         elif direction is Commands.RotateLeft:
-            self.sockUDP.sendto(self.droneRotLeft.format(self.sequence_num), self.ip, self.port)
+            self.sockUDP.sendto(self.droneRotLeft.format(self.sequence_num), (self.ip, self.port))
         elif direction is Commands.RotateRight:
-            self.sockUDP.sendto(self.droneRotRight.format(self.sequence_num), self.ip, self.port)
+            self.sockUDP.sendto(self.droneRotRight.format(self.sequence_num), (self.ip, self.port))
         self.sequence_num += 1

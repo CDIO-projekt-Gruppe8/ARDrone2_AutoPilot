@@ -5,7 +5,6 @@ from drone import Drone
 def main():
     drone = Drone()
     drone.run()
-    pass
 
 
 if __name__ == "__main__":

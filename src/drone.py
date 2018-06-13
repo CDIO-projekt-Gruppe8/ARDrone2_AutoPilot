@@ -1,3 +1,4 @@
+import thread
 import time
 from interfaces import CommandObserver, RingObserver
 from modules.analyzer import Analyzer
@@ -8,7 +9,9 @@ from modules.communication import Communication
 
 class Drone(CommandObserver, RingObserver):
 
+    _finished = False
     _penetrating = False
+    _send_commands = True
 
     def __init__(self):
         print("Drone initiating")
@@ -18,23 +21,27 @@ class Drone(CommandObserver, RingObserver):
 
         self._video_url = "tcp://192.168.1.1:5555"  # TODO: Insert correct URL
         self._number_of_rings = 10  # TODO: Real number? Determine dynamically? How long should it search?
-        self._current_qr_number = 1
+        self._current_qr_number = 2
         self._command = None
 
     def run(self):
         ready, msg = self._communication.test()
         if ready:
+            self._communication.lift()
             self._communication.set_max_altitude()
             print("Take off with msg: " + msg)
             # Listen for events
+            print 'Adding self as observer'
             self.add_command_observer(self)
             self.add_ring_observer(self)
             # Initiate pathfinder
-            self._pathfinder.explore()
-            self._pathfinder.start()
+            print 'Initiating pathfinder'
+            self._explore()
             # Initiate analyzer
+            print 'Initiating analyzer'
             self._analyzer.start()
-            self._analyzer.analyze_video(self._video_url, self._current_qr_number)
+            self._analyze()
+            self._send_command()
         else:
             print(msg)
 
@@ -42,18 +49,20 @@ class Drone(CommandObserver, RingObserver):
         self._command = command
 
     def _send_command(self):
-        while True:
+        while not self._finished:
             time.sleep(0.03)  # ARDrone claims to work best with commands every 0.03 sec
-            if self._command is not None:
+            if self._command is not None and self._send_commands:
                 self._communication.move(self._command)
         pass
 
     def _shutdown(self):
+        self._finished = True
         self._pathfinder.stop()
         self._analyzer.stop()
         self._communication.land()
 
     def ring_found(self):
+        print 'found'
         self._penetrate()
 
     def _ring_passed(self, passed):
@@ -68,12 +77,21 @@ class Drone(CommandObserver, RingObserver):
                 self._penetrating = False
                 self._current_qr_number += 1
                 self._pathfinder.start()
-                self._analyzer.analyze_video(self._video_url, self._current_qr_number)
+                self._analyzer.start()
+
+    def _analyze(self):
+        thread.start_new_thread(self._analyzer.analyze_video, (self._video_url, "P.0" + str(self._current_qr_number)))
+
+    def _explore(self):
+        self._pathfinder.start()
+        thread.start_new_thread(self._pathfinder.explore, ())
+        #self._pathfinder.explore()
 
     def _penetrate(self):
         self._penetrating = True
         self._pathfinder.pause()
-        self._pathfinder.penetrate_ring(callback=self._ring_passed, analyzer=self._analyzer)
+        #self._pathfinder.penetrate_ring(self._ring_passed, self._analyzer)
+        thread.start_new_thread(self._pathfinder.penetrate_ring, (self._ring_passed, self._analyzer))
 
     def add_command_observer(self, observer):
         self._pathfinder.add_command_observer(observer)

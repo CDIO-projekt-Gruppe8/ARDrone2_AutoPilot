@@ -30,7 +30,7 @@ def display_qr(im, decoded_objects):
 
     for obj in decoded_objects:
         qr_txt = obj.data
-        print 'QR code: ', qr_txt
+        #print 'QR code: ', qr_txt
 
 
 def distance_analyzer(rx, ry, cx, cy):

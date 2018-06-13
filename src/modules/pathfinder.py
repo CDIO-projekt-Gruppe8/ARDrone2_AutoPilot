@@ -9,50 +9,63 @@ class Pathfinder(Commander):
     _exploring = False
 
     def explore(self):
-
-        Ross = 0
-        while self._exploring:
-            qrStatus = 0  # qrStatus ??
-            # self.send_command(setspeed.drone(0.3))
-            # self.send_command(drone.takeoff)
-
-            if Ross is 4:
-                self.send_command(Commands.Up)
-                # self.send_command(drone.moveup)
-                time.sleep(2)
-                Ross = 0
-
-            self.command_send(drone.turnAngle(90))  # 90 grader ??
-            Ross = Ross + 1
         while self._exploring:
             # TODO: Define the exploration behaviour of the drone
             # Should it move directly forward until it would hit a wall, then turn sharply?
             # Should it turn slowly while moving in random directions?
-            command = None  # TODO
-            self.send_command(command)
+            for i in range(0, 4):
+                self.send_command(Commands.RotateRight)
+                time.sleep(0.03)
+            self.send_command(Commands.Up)
+            time.sleep(0.03)
         pass
 
     # Callback must take 1 parameter (bool, indicating if penetrated)
     def penetrate_ring(self, qr_number, callback, analyzer):
         self.approach_ring(qr_number, analyzer)
         passed = False
+        placeholder_int = 1
         while not passed:
-            # TODO: Implement logic to enter the ring and determine when the ring is passed
-            command = None  # TODO
-            self.send_command(command)
+            placeholder_int += 1
+            self.send_command(Commands.Forward)
+            if placeholder_int is 10:
+                passed = True
         # Ring is now passed or loop escaped for some reason
         if callback is not None:
             callback(passed)
         pass
 
-    def approach_ring(self, qr_number, analyzer):
+    def approach_ring(self, analyzer):
         approached = False
         while not approached:
             # TODO: Implement. Drone should be directly in front of ring/QR code
-            center = analyzer.get_ring_center(qr_number)
+            qr_center = analyzer.get_qr_center()
+            if abs(qr_center[0]) < 20 and abs(qr_center[1]) < 20:
+                # Centered
+                ring_center = analyzer.get_ring_center()
+                if abs(ring_center[0]) < 20 and abs(ring_center[1]) < 20:
+                    # Centered
+                    approached = True
+                else:
+                    command = self._determine_movement(ring_center)
+                    self.send_command(command)
+            else:
+                command = self._determine_movement(qr_center)
+                self.send_command(command)
             command = None  # TODO
             self.send_command(command)
-        pass
+
+    def _determine_movement(self, center):
+        if center[0] > center[1]:
+            if center[0] > 0:
+                return Commands.Right
+            else:
+                return Commands.Left
+        else:
+            if center[1] > 0:
+                return Commands.Down
+            else:
+                return Commands.Up
 
     def start(self):
         # TODO: Check if pathfinder-thread is running, create it if not

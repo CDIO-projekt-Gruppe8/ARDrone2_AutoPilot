@@ -13,6 +13,8 @@ from src.modules.distanceanalyzer import distanceanalyzer
 class Analyzer(object):
     _ring_observers = set()
     _analyzing = False
+    _ring_center = None
+    _qr_center = None
 
     # TODO: To be removed
     def test(self):
@@ -27,7 +29,7 @@ class Analyzer(object):
         lowerBound2=np.array([0,50,50])
         upperBound2=np.array([10,255,255])
 
-    # Initiate video capture
+        # Initiate video capture
         cap = cv2.VideoCapture(video_url)
         # Capture first frame
         ret, frame = cap.read()
@@ -60,7 +62,7 @@ class Analyzer(object):
 
             # Finds the cirles in the frames
             #  Gray
-            circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 260, param1=40, param2=100, minRadius=0, maxRadius=0)
+            circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 1000, param1=100, param2=100, minRadius=0, maxRadius=0)
 
             #  Red
             #  circles = cv2.HoughCircles(color, cv2.HOUGH_GRADIENT, 1, 260, param1=30, param2=30, minRadius=0, maxRadius=0)
@@ -75,11 +77,22 @@ class Analyzer(object):
                 qrStatus = True
                 qrStatusString = "QR STATUS: QR FOUND"
                 for obj in decodedObjects:
-                    qrtop = obj.rect[1]
-                    qrheight = obj.rect[3]
-                    qr = obj.rect, qrtop, qrheight
+                    qr_left = obj.rect[0]
+                    qr_top = obj.rect[1]
+                    qr_width = obj.rect[2]
+                    qr_height = obj.rect[3]
+                    qr = obj.rect, qr_top, qr_height
                     qrData = obj.data
+                    try:
+                        qrData = int(qrData)
+                    except ValueError:
+                        qrData = -1
                     if qrData is current_qr_number:
+                        qr_x = qr_left + (qr_width/2)
+                        qr_y = qr_top + (qr_height/2)
+                        cv2.line(frame, (qr_x, qr_y), (width/2, height/2), (220, 220, 220), 1)
+                        self.set_qr_center(
+                            distanceanalyzer(qr_x, qr_y, width / 2, height / 2))
                         break
 
             circlesStatusString = "Circle Status:  Circle NOT FOUND"
@@ -105,14 +118,9 @@ class Analyzer(object):
                     distanceString = map(int, distance)
                     cv2.putText(frame, repr(distanceString), (((x+(width/2))/2), ((y+(height/2))/2)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (102, 0, 255), 1)
 
-            try:
-                qrData = int(qrData)
-            except ValueError:
-                qrData = None
-
             #  Draw box around both objects and sets coordinates of ring center
             if qrStatus and qrData is not None and qrData is current_qr_number and circlesStatus:
-                cv2.rectangle(frame, (x + r+10, y - r-10), (x - r-10, qrtop + qrheight+10), (0, 128, 255), 1)
+                cv2.rectangle(frame, (x + r+10, y - r-10), (x - r-10, qr_top + qr_height+10), (0, 128, 255), 1)
                 objectString = 'RingObject ' + str(qrData) + ' found'
                 cv2.putText(frame, objectString, (x - r-10, y - r-12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 128, 255), 2)
                 self.set_ring_center(distance)
@@ -155,13 +163,19 @@ class Analyzer(object):
                 #break
             #pass
 
+    def get_qr_center(self):
+        return self._qr_center
+
+    def set_qr_center(self, qr_center):
+        self._qr_center = qr_center
+
     def get_ring_center(self):
         # Returns the x-y coordinates of the ring
-        return self.distance
+        return self._ring_center
 
-    def set_ring_center(self, distance):
+    def set_ring_center(self, ring_center):
         # Sets the x-y coordinates of the ring
-        self.distance = distance
+        self._ring_center = ring_center
 
     def start(self):
         # Check if analyzer-thread is running, create it if not

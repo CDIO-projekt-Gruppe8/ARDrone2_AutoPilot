@@ -42,7 +42,7 @@ class Communication(object):
     # VideoStream
 
     def test(self):
-        pass
+        return True, "test"
 
     def lift(self):
         self.sockUDP.sendto(self.droneLift.format(self.sequence_num), ('192.168.1.1', 5556))
@@ -78,17 +78,3 @@ class Communication(object):
         elif direction is Direction.RotateRight:
             self.sockUDP.sendto(self.droneRotRight.format(self.sequence_num), self.ip, self.port)
         self.sequence_num += 1
-
-
-#comm = Communication()
-
-#comm.setmaxaltitude()
-#
-#comm.lift()
-
-#comm.hover()
-
-
-
-
-

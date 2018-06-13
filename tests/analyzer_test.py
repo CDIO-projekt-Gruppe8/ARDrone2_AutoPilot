@@ -9,7 +9,7 @@ def analyze_video_test():
     while key is not 'q':
         try:
             qr = int(key)
-            analyzer.analyze_video(0, current_qr_number=qr)
+            analyzer.analyze_video("tcp://192.168.1.1:5555", current_qr_number=qr)
         except ValueError:
             print 'QR must be a number!'
         print 'Enter QR number:'

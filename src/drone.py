@@ -16,7 +16,7 @@ class Drone(CommandObserver, RingObserver):
         self._communication = Communication()
         self._pathfinder = Pathfinder()
 
-        self._video_url = "tcp://localhost:5555"  # TODO: Insert correct URL
+        self._video_url = "tcp://192.168.1.1:5555"  # TODO: Insert correct URL
         self._number_of_rings = 10  # TODO: Real number? Determine dynamically? How long should it search?
         self._current_qr_number = 1
         self._command = None
@@ -24,6 +24,7 @@ class Drone(CommandObserver, RingObserver):
     def run(self):
         ready, msg = self._communication.test()
         if ready:
+            self._communication.setmaxaltitude()
             print("Take off with msg: " + msg)
             # Listen for events
             self.add_command_observer(self)

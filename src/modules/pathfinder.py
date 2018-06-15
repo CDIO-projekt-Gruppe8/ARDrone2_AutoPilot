@@ -53,15 +53,17 @@ class Pathfinder(Commander):
             qr_center = analyzer.get_qr_center()
             if qr_center is None:
                 if no_qr_timer is None:
+                    print 'Unable to see QR'
                     no_qr_timer = time.clock()
-                elif time.clock() - no_qr_timer > 3:
+                elif time.clock() - no_qr_timer > 20:
                     return False
                 continue
+            no_qr_timer = None
             if abs(qr_center[0]) < 20 and abs(qr_center[1]) < 20:
                 if analyzer.get_qr_width() < 100:
                     print analyzer.get_qr_width()
                     now = time.clock()
-                    while time.clock() - now < 0.05 or analyzer.get_qr_width() < 100:
+                    while time.clock() - now < 0.2 or analyzer.get_qr_width() < 100:
                         self.send_command(Commands.Forward)
                     # Centered
                 else:
@@ -72,7 +74,7 @@ class Pathfinder(Commander):
                 direction = next(name for name, value in vars(Commands).items() if value is command)
                 print 'Command: ' + str(direction)
                 now = time.clock()
-                while time.clock() - now < 0.05:
+                while time.clock() - now < 0.2:
                     self.send_command(command)
 
     def start(self):

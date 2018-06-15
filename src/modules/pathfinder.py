@@ -10,15 +10,14 @@ class Pathfinder(Commander):
 
     def explore(self):
         print 'Exploring'
-        self.sleep(5)
+        self.sleep(10)
         while True:
             if self._exploring:
                 now = time.clock()
-                while time.clock() - now < 1:
+                while time.clock() - now < 2:
                     self.send_command(Commands.RotateRight)
-                    self.sleep(1)
                 self.send_command(Commands.Up)
-                self.sleep(1)
+                #self.sleep(1)
 
     # Callback must take 1 parameter (bool, indicating if penetrated)
     def penetrate_ring(self, callback, analyzer):
@@ -43,7 +42,9 @@ class Pathfinder(Commander):
             callback(True)
 
     def approach_ring(self, analyzer):
-        self.adjust_angle(analyzer)
+        self.send_command(Commands.Hover)
+        time.sleep(1)
+        #self.adjust_angle(analyzer)
         print 'approaching'
         no_qr_timer = None
         while True:
@@ -58,22 +59,22 @@ class Pathfinder(Commander):
                     return False
                 continue
             no_qr_timer = None
-            if abs(qr_center[0]) < 30 and abs(qr_center[1]) < 30:
-                if analyzer.get_qr_width() < 100:
-                    print analyzer.get_qr_width()
-                    now = time.clock()
-                    while time.clock() - now < 0.05 or analyzer.get_qr_width() < 100:
-                        self.send_command(Commands.Forward)
-                    # Centered
-                else:
-                    print 'approached'
-                    return True
+            width = analyzer.get_qr_width()
+            if abs(qr_center[0]) < 20 and abs(qr_center[1]) < 20 and width >= 100:
+                #self.adjust_angle(analyzer)
+                print 'approached'
+                return True
+            elif abs(qr_center[0]) < 100 and abs(qr_center[1]) < 100 and width < 100:
+                now = time.clock()
+                while time.clock() - now < 0.3 or analyzer.get_qr_width() < 100:
+                    self.send_command(Commands.Forward)
+                # Centered
             else:
                 command = _determine_movement(qr_center)
                 direction = next(name for name, value in vars(Commands).items() if value is command)
                 print 'Command: ' + str(direction)
                 now = time.clock()
-                while time.clock() - now < 0.05:
+                while time.clock() - now < 0.3:
                     self.send_command(command)
 
     def adjust_angle(self, analyzer):
@@ -92,15 +93,17 @@ class Pathfinder(Commander):
             if height is None or width is None:
                 self.sleep(1)
                 continue
-            current_diff = height / width
+            init_ratio = height / width
             print 'Move: ' + next(name for name, value in vars(Commands).items() if value is direction)
             self.send_command(direction)
             width = analyzer.get_qr_width()
             height = analyzer.get_qr_height()
-            new_diff = height / width
-            if new_diff > current_diff:
+            new_ratio = height / width
+            if new_ratio > init_ratio:
                 direction = Commands.Right
-            self.send_command(direction)
+            now = time.clock()
+            while time.clock() - now < 0.1:
+                self.send_command(direction)
             width = analyzer.get_qr_width()
             height = analyzer.get_qr_height()
 
@@ -116,10 +119,7 @@ class Pathfinder(Commander):
         self._exploring = False
 
     def sleep(self, seconds):
-        time.sleep(0.05)
-        now = time.clock()
-        while time.clock() - now < seconds:
-            self.send_command(None)
+        time.sleep(seconds)
 
 
 # Static functions

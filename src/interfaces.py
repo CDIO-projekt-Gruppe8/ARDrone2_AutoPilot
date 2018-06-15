@@ -1,3 +1,6 @@
+import time
+
+
 class Commander(object):
     def __init__(self):
         self._command_observers = set()
@@ -6,6 +9,7 @@ class Commander(object):
         # priority should be a Priority object
         for obs in self._command_observers:
             obs.receive_command(command)
+        time.sleep(1)
 
     def add_command_observer(self, obs):
         self._command_observers.add(obs)

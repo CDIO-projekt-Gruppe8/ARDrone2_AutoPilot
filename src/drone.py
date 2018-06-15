@@ -73,7 +73,7 @@ class Drone(CommandObserver, RingObserver):
         if not passed:
             print('Failed at passing ring!')
             print('Trying again')
-            self._penetrate()
+            self._pathfinder.start()
         else:
             if self._current_qr_number == self._number_of_rings:
                 self._shutdown()

@@ -49,14 +49,17 @@ class Communication(object):
         return False, "T2"
 
     def lift(self):
+        print 'Lift'
         self.sockUDP.sendto(self.droneLift.format(self.sequence_num), ('192.168.1.1', 5556))
         self.sequence_num += 1
 
     def land(self):
+        print 'Land'
         self.sockUDP.sendto(self.droneLand.format(self.sequence_num), ('192.168.1.1', 5556))
         self.sequence_num += 1
 
     def hover(self):
+        print 'Hover'
         self.sockUDP.sendto(self.droneHover.format(self.sequence_num), ('192.168.1.1', 5556))
         self.sequence_num += 1
 
@@ -77,6 +80,7 @@ class Communication(object):
         if direction is Commands.Lift:
             self.lift()
             return
+        print next(name for name, value in vars(Commands).items() if value is direction)
         if direction is Commands.Up:
             self.sockUDP.sendto(self.droneUp.format(self.sequence_num), (self.ip, self.port))
         elif direction is Commands.Down:

@@ -59,6 +59,7 @@ class Analyzer(object):
                     qr_width = obj.rect[2]
                     qr_height = obj.rect[3]
                     qr_data = obj.data
+                    qr_status_string = "QR STATUS: QR FOUND [" + qr_data + "]"
                     if qr_data == self._current_qr_number:
                         qr_x = qr_left + (qr_width/2)
                         qr_y = qr_top + (qr_height/2)

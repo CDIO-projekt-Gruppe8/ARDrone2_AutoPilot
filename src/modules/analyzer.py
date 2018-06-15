@@ -16,8 +16,10 @@ class Analyzer(object):
     _analyzing = False
     _qr_center = None
     _qr_width = None
+    _current_qr_number = None
 
     def analyze_video(self, video_url, current_qr_number):
+        self._current_qr_number = current_qr_number
         print 'analyze beginning'
         # Initiate video capture
         cap = cv2.VideoCapture(video_url)
@@ -56,7 +58,7 @@ class Analyzer(object):
                     qr_width = obj.rect[2]
                     qr_height = obj.rect[3]
                     qr_data = obj.data
-                    if qr_data == current_qr_number:
+                    if qr_data == self._current_qr_number:
                         qr_x = qr_left + (qr_width/2)
                         qr_y = qr_top + (qr_height/2)
                         cv2.line(frame, (qr_x, qr_y), (width/2, height/2), (220, 220, 220), 1)
@@ -66,7 +68,7 @@ class Analyzer(object):
                         break
 
             #  Draw box around both objects and sets coordinates of ring center
-            if qr_status and qr_data is not None and qr_data == current_qr_number and self._analyzing:
+            if qr_status and qr_data is not None and qr_data == self._current_qr_number and self._analyzing:
                 self._analyzing = False
                 self._ring_observer_callback()
 
@@ -84,6 +86,9 @@ class Analyzer(object):
         print 'while loop exited'
         cap.release()
         cv2.destroyAllWindows()
+
+    def set_current_qr(self, qr):
+        self._current_qr_number = qr
 
     def get_qr_center(self):
         return self._qr_center

@@ -11,7 +11,7 @@ class Drone(CommandObserver, RingObserver):
 
     _finished = False
     _penetrating = False
-    _send_commands = False
+    _send_commands = True
 
     def __init__(self):
         print("Drone initiating")
@@ -21,7 +21,7 @@ class Drone(CommandObserver, RingObserver):
 
         self._video_url = "tcp://192.168.1.1:5555"  # TODO: Insert correct URL
         self._number_of_rings = 10  # TODO: Real number? Determine dynamically? How long should it search?
-        self._current_qr_number = 1
+        self._current_qr_number = 7
         self._command = None
 
     def run(self):
@@ -81,7 +81,7 @@ class Drone(CommandObserver, RingObserver):
                 self._penetrating = False
                 self._current_qr_number += 1
                 self._pathfinder.start()
-                self._analyzer.start()
+                self._analyzer.set_current_qr("P.0" + str(self._current_qr_number))
 
     def _analyze(self):
         thread.start_new_thread(self._analyzer.analyze_video, (self._video_url, "P.0" + str(self._current_qr_number)))

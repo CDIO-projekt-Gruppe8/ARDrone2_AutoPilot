@@ -10,22 +10,26 @@ class Pathfinder(Commander):
 
     def explore(self):
         print 'Exploring'
-        self.sleep(5)
+        time.sleep(5)
         while True:
             if self._exploring:
                 now = time.clock()
                 while time.clock() - now < 10:
                     self.send_command(Commands.RotateRight)
-                    self.sleep(1)
+                    time.sleep(1)
                 self.send_command(Commands.Up)
-                self.sleep(1)
+                time.sleep(1)
 
     # Callback must take 1 parameter (bool, indicating if penetrated)
     def penetrate_ring(self, callback, analyzer):
-        self.approach_ring(analyzer)
+        passed = False
+        approached = self.approach_ring(analyzer)
+        if not approached:
+            if callback is not None:
+                callback(passed)
+            return
         print 'penetrating'
         self.send_command(Commands.Land)
-        passed = False
 
         self.send_command(Commands.Up)
         # Move forward
@@ -42,26 +46,34 @@ class Pathfinder(Commander):
 
     def approach_ring(self, analyzer):
         print 'approaching'
-        approached = False
-        while not approached:
-            self.send_command(Commands.Hover)
-            self.sleep(1)
+        no_qr_timer = None
+        while True:
+            time.sleep(1)
             # TODO: Implement. Drone should be directly in front of ring/QR code
             qr_center = analyzer.get_qr_center()
+            if qr_center is None:
+                if no_qr_timer is None:
+                    no_qr_timer = time.clock()
+                elif time.clock() - no_qr_timer > 3:
+                    return False
+                continue
             if abs(qr_center[0]) < 20 and abs(qr_center[1]) < 20:
-                # Centered
-                print 'approached'
-                approached = True
-            elif abs(qr_center[0]) < 50 and abs(qr_center[1]) < 50 and analyzer.get_qr_width() < 100:
-                print analyzer.get_qr_width()
-                now = time.clock()
-                while time.clock() - now < 0.5 and analyzer.get_qr_width() < 100:
-                    self.send_command(Commands.Forward)
+                if analyzer.get_qr_width() < 100:
+                    print analyzer.get_qr_width()
+                    now = time.clock()
+                    while time.clock() - now < 0.05 or analyzer.get_qr_width() < 100:
+                        self.send_command(Commands.Forward)
+                    # Centered
+                else:
+                    print 'approached'
+                    return True
             else:
                 command = _determine_movement(qr_center)
                 direction = next(name for name, value in vars(Commands).items() if value is command)
                 print 'Command: ' + str(direction)
-                self.send_command(command)
+                now = time.clock()
+                while time.clock() - now < 0.05:
+                    self.send_command(command)
 
     def start(self):
         # TODO: Check if pathfinder-thread is running, create it if not
@@ -73,12 +85,6 @@ class Pathfinder(Commander):
     def stop(self):
         # TODO: Check if pathfinder-thread is running, close if it is
         self._exploring = False
-
-    def sleep(self, seconds):
-        time.sleep(0.05)
-        now = time.clock()
-        while time.clock() - now < seconds:
-            self.send_command(Commands.Hover)
 
 
 # Static functions

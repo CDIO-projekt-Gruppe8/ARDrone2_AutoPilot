@@ -14,9 +14,8 @@ from utils import distance_analyzer
 class Analyzer(object):
     _ring_observers = set()
     _analyzing = False
-    _ring_center = None
     _qr_center = None
-    _qr_width = 0
+    _qr_width = None
 
     def analyze_video(self, video_url, current_qr_number):
         print 'analyze beginning'
@@ -35,6 +34,8 @@ class Analyzer(object):
                     continue
             qr_data = 0
             qr_status = False
+            self.set_qr_width(None)
+            self.set_qr_center(None)
 
         #  Finds center of frame and draw it on frame
             height, width = frame.shape[:2]
@@ -95,14 +96,6 @@ class Analyzer(object):
 
     def set_qr_width(self, qr_width):
         self._qr_width = qr_width
-
-    def get_ring_center(self):
-        # Returns the x-y coordinates of the ring
-        return self._ring_center
-
-    def set_ring_center(self, ring_center):
-        # Sets the x-y coordinates of the ring
-        self._ring_center = ring_center
 
     def start(self):
         # Check if analyzer-thread is running, create it if not

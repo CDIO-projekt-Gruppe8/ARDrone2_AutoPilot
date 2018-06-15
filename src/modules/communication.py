@@ -16,6 +16,8 @@ import socket
 
 
 class Communication(object):
+    droneLeftSpeed = str(float_to_bits(-0.2))
+    droneRightSpeed = str(float_to_bits(0.2))
     dronePosSpeed = str(float_to_bits(0.2))
     droneNegSpeed = str(float_to_bits(-0.2))
     droneRotPosSpeed = str(float_to_bits(0.1))
@@ -28,12 +30,12 @@ class Communication(object):
     droneDown = "AT*PCMD={0},1,0,0," + droneNegSpeed + ",0\r\n"
     droneForward = "AT*PCMD={0},1,0," + droneNegSpeed + ",0,0\r\n"
     droneBack = "AT*PCMD={0},1,0," + dronePosSpeed + ",0,0\r\n"
-    droneLeft = "AT*PCMD={0},1," + droneNegSpeed + ",0,0,0\r\n"
-    droneRight = "AT*PCMD={0},1," + dronePosSpeed + ",0,0,0\r\n"
+    droneLeft = "AT*PCMD={0},1," + droneLeftSpeed + ",0,0,0\r\n"
+    droneRight = "AT*PCMD={0},1," + droneRightSpeed + ",0,0,0\r\n"
     droneRotLeft = "AT*PCMD={0},1,0,0,0," + droneRotNegSpeed + "\r\n"
     droneRotRight = "AT*PCMD={0},1,0,0,0," + droneRotPosSpeed + "\r\n"
     emergencyReset = "AT*REF={0},290717952\r\n"
-    setMaxAltitude1m = "AT*CONFIG=1,\"control:altitude_max\",\"1000\"\r\n"
+    setMaxAltitude1m = "AT*CONFIG=1,\"control:altitude_max\",\"2000\"\r\n"
 
     def __init__(self):
         self.sockUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

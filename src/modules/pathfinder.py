@@ -10,15 +10,15 @@ class Pathfinder(Commander):
 
     def explore(self):
         print 'Exploring'
-        time.sleep(5)
+        self.sleep(5)
         while True:
             if self._exploring:
                 now = time.clock()
-                while time.clock() - now < 10:
+                while time.clock() - now < 1:
                     self.send_command(Commands.RotateRight)
-                    time.sleep(1)
+                    self.sleep(1)
                 self.send_command(Commands.Up)
-                time.sleep(1)
+                self.sleep(1)
 
     # Callback must take 1 parameter (bool, indicating if penetrated)
     def penetrate_ring(self, callback, analyzer):
@@ -28,23 +28,26 @@ class Pathfinder(Commander):
                 callback(False)
             return
         print 'penetrating'
+        self.send_command(Commands.Land)
+        if callback is not None:
+            callback(True)
         now = time.clock()
         while time.clock() - now < 0.2:
             self.send_command(Commands.Up)
         # Move forward
         now = time.clock()
-        while time.clock() - now < 2:
+        while time.clock() - now < 1:
             self.send_command(Commands.Forward)
         # Ring is now passed or loop escaped for some reason
         if callback is not None:
             callback(True)
-        pass
 
     def approach_ring(self, analyzer):
+        self.adjust_angle(analyzer)
         print 'approaching'
         no_qr_timer = None
         while True:
-            time.sleep(1)
+            self.sleep(1)
             # TODO: Implement. Drone should be directly in front of ring/QR code
             qr_center = analyzer.get_qr_center()
             if qr_center is None:
@@ -59,7 +62,7 @@ class Pathfinder(Commander):
                 if analyzer.get_qr_width() < 100:
                     print analyzer.get_qr_width()
                     now = time.clock()
-                    while time.clock() - now < 0.2 or analyzer.get_qr_width() < 100:
+                    while time.clock() - now < 0.05 or analyzer.get_qr_width() < 100:
                         self.send_command(Commands.Forward)
                     # Centered
                 else:
@@ -70,8 +73,36 @@ class Pathfinder(Commander):
                 direction = next(name for name, value in vars(Commands).items() if value is command)
                 print 'Command: ' + str(direction)
                 now = time.clock()
-                while time.clock() - now < 0.2:
+                while time.clock() - now < 0.05:
                     self.send_command(command)
+
+    def adjust_angle(self, analyzer):
+        print 'adjusting angle'
+        width = analyzer.get_qr_width()
+        height = analyzer.get_qr_height()
+        while height is None or width is None:
+            self.sleep(1)
+            print 'waiting for qr'
+            width = analyzer.get_qr_width()
+            height = analyzer.get_qr_height()
+        while height/width > 1.2:
+            direction = Commands.Left
+            width = analyzer.get_qr_width()
+            height = analyzer.get_qr_height()
+            if height is None or width is None:
+                self.sleep(1)
+                continue
+            current_diff = height / width
+            print 'Move: ' + next(name for name, value in vars(Commands).items() if value is direction)
+            self.send_command(direction)
+            width = analyzer.get_qr_width()
+            height = analyzer.get_qr_height()
+            new_diff = height / width
+            if new_diff > current_diff:
+                direction = Commands.Right
+            self.send_command(direction)
+            width = analyzer.get_qr_width()
+            height = analyzer.get_qr_height()
 
     def start(self):
         # TODO: Check if pathfinder-thread is running, create it if not
@@ -83,6 +114,12 @@ class Pathfinder(Commander):
     def stop(self):
         # TODO: Check if pathfinder-thread is running, close if it is
         self._exploring = False
+
+    def sleep(self, seconds):
+        time.sleep(0.05)
+        now = time.clock()
+        while time.clock() - now < seconds:
+            self.send_command(None)
 
 
 # Static functions

@@ -25,4 +25,4 @@ class RingObserver(object):
 
 
 class Commands(object):
-    Up, Down, Left, Right, Forward, Back, RotateLeft, RotateRight, Hover = range(9)
+    Up, Down, Left, Right, Forward, Back, RotateLeft, RotateRight, Hover, Lift, Land = range(11)

@@ -10,19 +10,21 @@ class Pathfinder(Commander):
 
     def explore(self):
         print 'Exploring'
+        self.sleep(5)
         while True:
-            time.sleep(1)
             if self._exploring:
-                for i in range(0, 4):
+                now = time.clock()
+                while time.clock() - now < 10:
                     self.send_command(Commands.RotateRight)
-                time.sleep(1)
+                    self.sleep(1)
                 self.send_command(Commands.Up)
-                time.sleep(1)
+                self.sleep(1)
 
     # Callback must take 1 parameter (bool, indicating if penetrated)
     def penetrate_ring(self, callback, analyzer):
         self.approach_ring(analyzer)
         print 'penetrating'
+        self.send_command(Commands.Land)
         passed = False
 
         self.send_command(Commands.Up)
@@ -42,17 +44,24 @@ class Pathfinder(Commander):
         print 'approaching'
         approached = False
         while not approached:
+            self.send_command(Commands.Hover)
+            self.sleep(1)
             # TODO: Implement. Drone should be directly in front of ring/QR code
             qr_center = analyzer.get_qr_center()
             if abs(qr_center[0]) < 20 and abs(qr_center[1]) < 20:
                 # Centered
                 print 'approached'
                 approached = True
+            elif abs(qr_center[0]) < 50 and abs(qr_center[1]) < 50 and analyzer.get_qr_width() < 100:
+                print analyzer.get_qr_width()
+                now = time.clock()
+                while time.clock() - now < 0.5 and analyzer.get_qr_width() < 100:
+                    self.send_command(Commands.Forward)
             else:
                 command = _determine_movement(qr_center)
+                direction = next(name for name, value in vars(Commands).items() if value is command)
+                print 'Command: ' + str(direction)
                 self.send_command(command)
-            command = None  # TODO
-            self.send_command(command)
 
     def start(self):
         # TODO: Check if pathfinder-thread is running, create it if not
@@ -65,16 +74,24 @@ class Pathfinder(Commander):
         # TODO: Check if pathfinder-thread is running, close if it is
         self._exploring = False
 
+    def sleep(self, seconds):
+        time.sleep(0.05)
+        now = time.clock()
+        while time.clock() - now < seconds:
+            self.send_command(Commands.Hover)
+
 
 # Static functions
 def _determine_movement(center):
-    if center[0] > center[1]:
-        if center[0] > 0:
+    x = center[0]
+    y = center[1]
+    if abs(x) > abs(y):
+        if center[0] < 0:
             return Commands.Right
         else:
             return Commands.Left
     else:
-        if center[1] > 0:
+        if center[1] < 0:
             return Commands.Down
         else:
             return Commands.Up

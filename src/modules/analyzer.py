@@ -16,6 +16,7 @@ class Analyzer(object):
     _analyzing = False
     _ring_center = None
     _qr_center = None
+    _qr_width = 0
 
     def analyze_video(self, video_url, current_qr_number):
         print 'analyze beginning'
@@ -60,6 +61,7 @@ class Analyzer(object):
                         cv2.line(frame, (qr_x, qr_y), (width/2, height/2), (220, 220, 220), 1)
                         self.set_qr_center(
                             distance_analyzer(qr_x, qr_y, width / 2, height / 2))
+                        self.set_qr_width(qr_width)
                         break
 
             #  Draw box around both objects and sets coordinates of ring center
@@ -87,6 +89,12 @@ class Analyzer(object):
 
     def set_qr_center(self, qr_center):
         self._qr_center = qr_center
+
+    def get_qr_width(self):
+        return self._qr_width
+
+    def set_qr_width(self, qr_width):
+        self._qr_width = qr_width
 
     def get_ring_center(self):
         # Returns the x-y coordinates of the ring

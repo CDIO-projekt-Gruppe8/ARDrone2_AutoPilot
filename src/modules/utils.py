@@ -2,6 +2,7 @@
 import pyzbar.pyzbar as pyzbar
 import numpy as np
 import cv2
+import struct
 
 
 def decode_qr(im):
@@ -38,3 +39,8 @@ def distance_analyzer(rx, ry, cx, cy):
     dy = cy-ry
     cord = [dx, dy]
     return cord
+
+
+def float_to_bits(f):
+    s = struct.pack('>f', f)
+    return struct.unpack('>l', s)[0]

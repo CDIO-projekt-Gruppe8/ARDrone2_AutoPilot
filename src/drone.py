@@ -1,6 +1,6 @@
 import thread
 import time
-from interfaces import CommandObserver, RingObserver
+from interfaces import CommandObserver, RingObserver, Commands
 from modules.analyzer import Analyzer
 from modules.pathfinder import Pathfinder
 from modules.communication import Communication
@@ -21,14 +21,15 @@ class Drone(CommandObserver, RingObserver):
 
         self._video_url = "tcp://192.168.1.1:5555"  # TODO: Insert correct URL
         self._number_of_rings = 10  # TODO: Real number? Determine dynamically? How long should it search?
-        self._current_qr_number = 2
+        self._current_qr_number = 7
         self._command = None
 
     def run(self):
         ready, msg = self._communication.test()
         if ready:
-            self._communication.lift()
-            self._communication.set_max_altitude()
+            if self._send_commands:
+                self._communication.lift()
+                self._communication.set_max_altitude()
             print("Take off with msg: " + msg)
             # Listen for events
             print 'Adding self as observer'
@@ -53,6 +54,7 @@ class Drone(CommandObserver, RingObserver):
             time.sleep(0.03)  # ARDrone claims to work best with commands every 0.03 sec
             if self._command is not None and self._send_commands:
                 self._communication.move(self._command)
+                self._command = Commands.Hover
         pass
 
     def _shutdown(self):
@@ -62,7 +64,7 @@ class Drone(CommandObserver, RingObserver):
         self._communication.land()
 
     def ring_found(self):
-        print 'found'
+        self._analyzer.stop()
         self._penetrate()
 
     def _ring_passed(self, passed):

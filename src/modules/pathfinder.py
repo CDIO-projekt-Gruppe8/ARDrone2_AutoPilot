@@ -22,26 +22,22 @@ class Pathfinder(Commander):
 
     # Callback must take 1 parameter (bool, indicating if penetrated)
     def penetrate_ring(self, callback, analyzer):
-        passed = False
         approached = self.approach_ring(analyzer)
         if not approached:
             if callback is not None:
-                callback(passed)
+                callback(False)
             return
         print 'penetrating'
-        self.send_command(Commands.Land)
-
-        self.send_command(Commands.Up)
+        now = time.clock()
+        while time.clock() - now < 0.2:
+            self.send_command(Commands.Up)
         # Move forward
-        placeholder_int = 1
-        while not passed:
-            placeholder_int += 1
+        now = time.clock()
+        while time.clock() - now < 2:
             self.send_command(Commands.Forward)
-            if placeholder_int is 10:
-                passed = True
         # Ring is now passed or loop escaped for some reason
         if callback is not None:
-            callback(passed)
+            callback(True)
         pass
 
     def approach_ring(self, analyzer):
@@ -59,7 +55,7 @@ class Pathfinder(Commander):
                     return False
                 continue
             no_qr_timer = None
-            if abs(qr_center[0]) < 20 and abs(qr_center[1]) < 20:
+            if abs(qr_center[0]) < 30 and abs(qr_center[1]) < 30:
                 if analyzer.get_qr_width() < 100:
                     print analyzer.get_qr_width()
                     now = time.clock()

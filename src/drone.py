@@ -11,7 +11,7 @@ class Drone(CommandObserver, RingObserver):
 
     _finished = False
     _penetrating = False
-    _send_commands = True
+    _send_commands = False
 
     def __init__(self):
         print("Drone initiating")

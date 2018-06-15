@@ -16,6 +16,7 @@ class Analyzer(object):
     _analyzing = False
     _qr_center = None
     _qr_width = None
+    _qr_height = None
     _current_qr_number = None
 
     def analyze_video(self, video_url, current_qr_number):
@@ -65,6 +66,7 @@ class Analyzer(object):
                         self.set_qr_center(
                             distance_analyzer(qr_x, qr_y, width / 2, height / 2))
                         self.set_qr_width(qr_width)
+                        self.set_qr_height(qr_height)
                         break
 
             #  Draw box around both objects and sets coordinates of ring center
@@ -101,6 +103,12 @@ class Analyzer(object):
 
     def set_qr_width(self, qr_width):
         self._qr_width = qr_width
+
+    def get_qr_height(self):
+        return self._qr_height
+
+    def set_qr_height(self, qr_height):
+        self._qr_height = qr_height
 
     def start(self):
         # Check if analyzer-thread is running, create it if not

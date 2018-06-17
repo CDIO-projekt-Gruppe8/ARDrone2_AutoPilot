@@ -22,9 +22,6 @@ class Analyzer(object):
     _command = None
 
     def analyze_video(self, video_url, current_qr_number):
-        # TODO: REM
-        video_url = 1
-        # TODO: DONE
         self.set_current_qr(current_qr_number)
         print 'analyze beginning'
         # Initiate video capture

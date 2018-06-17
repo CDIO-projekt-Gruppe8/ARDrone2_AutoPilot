@@ -7,105 +7,104 @@ from src.interfaces import Commander, Commands
 
 class Pathfinder(Commander):
     _exploring = False
+    _frame_width = 640
+    _frame_height = 480
 
     def explore(self):
-        print 'Exploring'
-        self.sleep(10)
         while True:
             if self._exploring:
-                now = time.clock()
-                while time.clock() - now < 2:
+                print 'exploring'
+                for i in range(0, 4):
                     self.send_command(Commands.RotateRight)
+                    time.sleep(0.5)
+                    self.send_command(Commands.Hover)
+                    time.sleep(1)
+                    if not self._exploring:
+                        break
+                if not self._exploring:
+                    continue
                 self.send_command(Commands.Up)
-                #self.sleep(1)
+                time.sleep(0.5)
 
     # Callback must take 1 parameter (bool, indicating if penetrated)
     def penetrate_ring(self, callback, analyzer):
         approached = self.approach_ring(analyzer)
         if not approached:
+            print 'could not approach'
             if callback is not None:
                 callback(False)
             return
         print 'penetrating'
-        self.send_command(Commands.Land)
-        if callback is not None:
-            callback(True)
-        now = time.clock()
-        while time.clock() - now < 0.2:
-            self.send_command(Commands.Up)
+        self.send_command(Commands.Up)
+        time.sleep(0.2)
+        self.send_command(Commands.Hover)
+        time.sleep(0.5)
         # Move forward
-        now = time.clock()
-        while time.clock() - now < 1:
-            self.send_command(Commands.Forward)
+        self.send_command(Commands.Forward)
+        time.sleep(1.0)
+        self.send_command(Commands.Hover)
         # Ring is now passed or loop escaped for some reason
+        print 'Penetration done'
         if callback is not None:
             callback(True)
 
     def approach_ring(self, analyzer):
         self.send_command(Commands.Hover)
         time.sleep(1)
-        #self.adjust_angle(analyzer)
+        self.adjust_angle(analyzer)
         print 'approaching'
         no_qr_timer = None
         while True:
-            self.sleep(1)
-            # TODO: Implement. Drone should be directly in front of ring/QR code
-            qr_center = analyzer.get_qr_center()
+            qr_polygon, qr_center, qr_padding = analyzer.get_qr()
             if qr_center is None:
                 if no_qr_timer is None:
                     print 'Unable to see QR'
                     no_qr_timer = time.clock()
-                elif time.clock() - no_qr_timer > 20:
+                elif time.clock() - no_qr_timer > 5:
                     return False
                 continue
             no_qr_timer = None
-            width = analyzer.get_qr_width()
-            if abs(qr_center[0]) < 20 and abs(qr_center[1]) < 20 and width >= 100:
-                #self.adjust_angle(analyzer)
+            if max(qr_padding) < 120:
                 print 'approached'
                 return True
-            elif abs(qr_center[0]) < 100 and abs(qr_center[1]) < 100 and width < 100:
-                now = time.clock()
-                while time.clock() - now < 0.3 or analyzer.get_qr_width() < 100:
-                    self.send_command(Commands.Forward)
-                # Centered
-            else:
-                command = _determine_movement(qr_center)
-                direction = next(name for name, value in vars(Commands).items() if value is command)
-                print 'Command: ' + str(direction)
-                now = time.clock()
-                while time.clock() - now < 0.3:
-                    self.send_command(command)
+            command = _determine_movement(qr_padding)
+            self.send_command(command)
+            time.sleep(0.5)
+            self.send_command(Commands.Hover)
 
     def adjust_angle(self, analyzer):
         print 'adjusting angle'
-        width = analyzer.get_qr_width()
-        height = analyzer.get_qr_height()
-        while height is None or width is None:
-            self.sleep(1)
-            print 'waiting for qr'
-            width = analyzer.get_qr_width()
-            height = analyzer.get_qr_height()
-        while height/width > 1.2:
-            direction = Commands.Left
-            width = analyzer.get_qr_width()
-            height = analyzer.get_qr_height()
-            if height is None or width is None:
-                self.sleep(1)
+        while True:
+            qr_polygon, _, _ = analyzer.get_qr()
+            if qr_polygon[0] is None:
+                time.sleep(0.1)
                 continue
-            init_ratio = height / width
-            print 'Move: ' + next(name for name, value in vars(Commands).items() if value is direction)
+            right_height = qr_polygon[1].y - qr_polygon[0].y
+            left_height = qr_polygon[2].y - qr_polygon[3].y
+            init_ratio = float(left_height)/float(right_height)
+            if abs(1 - init_ratio) < 0.01:
+                print 'angle has been adjusted'
+                time.sleep(1)
+                break
+            else:
+                print 'L: ' + str(left_height) + ' / R: ' + str(right_height) \
+                      + ' = ' + str(init_ratio)
+
+            # Check if QR Code is about to leave image from top / bottom
+            if left_height > right_height:
+                if self._frame_width - max(qr_polygon[0].x, qr_polygon[1].x) < 100:
+                    direction = Commands.Right
+                else:
+                    direction = Commands.RotateLeft
+            else:
+                if min(qr_polygon[2].x, qr_polygon[3].x) < 100:
+                    direction = Commands.Left
+                else:
+                    direction = Commands.RotateRight
             self.send_command(direction)
-            width = analyzer.get_qr_width()
-            height = analyzer.get_qr_height()
-            new_ratio = height / width
-            if new_ratio > init_ratio:
-                direction = Commands.Right
-            now = time.clock()
-            while time.clock() - now < 0.1:
-                self.send_command(direction)
-            width = analyzer.get_qr_width()
-            height = analyzer.get_qr_height()
+            time.sleep(0.5)
+            self.send_command(Commands.Hover)
+            time.sleep(1)
 
     def start(self):
         # TODO: Check if pathfinder-thread is running, create it if not
@@ -118,21 +117,26 @@ class Pathfinder(Commander):
         # TODO: Check if pathfinder-thread is running, close if it is
         self._exploring = False
 
-    def sleep(self, seconds):
-        time.sleep(seconds)
-
 
 # Static functions
-def _determine_movement(center):
-    x = center[0]
-    y = center[1]
-    if abs(x) > abs(y):
-        if center[0] < 0:
-            return Commands.Right
-        else:
-            return Commands.Left
-    else:
-        if center[1] < 0:
+def _get_qr_polygon(analyzer):
+    return analyzer.get_qr_polygon()
+
+
+def _determine_movement(qr_padding):
+    [padding_top, padding_right, padding_bottom, padding_left] = qr_padding
+    padding_diff_vertical = padding_top - padding_bottom
+    padding_diff_horizontal = padding_right - padding_left
+
+    if abs(padding_diff_vertical - padding_diff_horizontal) < 20:
+        return Commands.Forward
+    elif abs(padding_diff_vertical) > abs(padding_diff_horizontal):
+        if padding_diff_vertical > 0:
             return Commands.Down
         else:
             return Commands.Up
+    else:
+        if padding_diff_horizontal > 0:
+            return Commands.Left
+        else:
+            return Commands.Right

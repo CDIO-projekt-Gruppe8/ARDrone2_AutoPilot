@@ -80,8 +80,8 @@ class Communication(object):
         if direction is Commands.Lift:
             self.lift()
             return
-        print next(name for name, value in vars(Commands).items() if value is direction)
         if direction is Commands.Up:
+            print 'UP!'
             self.sockUDP.sendto(self.droneUp.format(self.sequence_num), (self.ip, self.port))
         elif direction is Commands.Down:
             self.sockUDP.sendto(self.droneDown.format(self.sequence_num), (self.ip, self.port))
